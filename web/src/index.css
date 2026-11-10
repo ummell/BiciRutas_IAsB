@@ -92,3 +92,54 @@
     animation: none;
   }
 }
+
+.rango-hora {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rango-hora:focus-visible {
+  outline: none;
+}
+
+.rango-hora::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.rango-hora::-webkit-slider-thumb {
+  appearance: none;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  border-radius: 9999px;
+  border: 3px solid #fff;
+  background: var(--color-navy);
+  box-shadow: 0 1px 5px rgb(2 51 101 / 0.5);
+  transition: box-shadow 150ms;
+}
+
+.rango-hora:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgb(9 151 230 / 0.4);
+}
+
+.rango-hora::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.rango-hora::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 3px solid #fff;
+  background: var(--color-navy);
+  box-shadow: 0 1px 5px rgb(2 51 101 / 0.5);
+}
+
+.rango-hora:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgb(9 151 230 / 0.4);
+}
