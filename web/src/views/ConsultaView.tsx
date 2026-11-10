@@ -15,7 +15,7 @@ function etiquetaFlex(min: number): string {
   return min === 0 ? "Salir exactamente a esa hora" : `Poder salir hasta ${min} min después`;
 }
 
-export function ConsultaView({ escenario, red }: { escenario: string; red: Red }) {
+export function ConsultaView({ escenario, red, admin }: { escenario: string; red: Red; admin: boolean }) {
   const ultimo = aHora(aMin(red.config.fin) - red.config.intervalo_min);
 
   const [origen, setOrigen] = useState("N01");
@@ -173,21 +173,23 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
             if (puedeCalcular) mutacion.mutate({ ampliar: false });
           }}
         >
-          <Campo etiqueta="Cargar viaje del escenario" id="viaje">
-            <select
-              id="viaje"
-              className={CLASE_INPUT}
-              defaultValue=""
-              onChange={(e) => e.target.value && cargarViaje(e.target.value)}
-            >
-              <option value="">Elegir un viaje…</option>
-              {red.viajes.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.id} · {v.origen} → {v.destino} · {v.salida_desde}–{v.salida_hasta}
-                </option>
-              ))}
-            </select>
-          </Campo>
+          {admin && (
+            <Campo etiqueta="Cargar viaje del escenario" id="viaje">
+              <select
+                id="viaje"
+                className={CLASE_INPUT}
+                defaultValue=""
+                onChange={(e) => e.target.value && cargarViaje(e.target.value)}
+              >
+                <option value="">Elegir un viaje…</option>
+                {red.viajes.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.id} · {v.origen} → {v.destino} · {v.salida_desde}–{v.salida_hasta}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+          )}
 
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-2 gap-y-3">
             <div className="grid gap-3">
