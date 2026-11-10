@@ -6,16 +6,12 @@ import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { plural } from "../lib/texto";
 import { MapaInteractivo } from "../components/MapaInteractivo";
-import { Resultado } from "../components/Resultado";
-import { Campo, Card, CLASE_INPUT, ErrorAviso } from "../components/ui";
+import { Resultado, type PuntoRuta } from "../components/Resultado";
+import { Campo, Card, CLASE_INPUT, ErrorAviso, Segmentado, SelectorHora } from "../components/ui";
 
 const FLEX_BASE = [0, 15, 30, 60];
 
-function etiquetaFlex(min: number): string {
-  return min === 0 ? "Salir exactamente a esa hora" : `Poder salir hasta ${min} min después`;
-}
-
-export function ConsultaView({ escenario, red }: { escenario: string; red: Red }) {
+export function ConsultaView({ escenario, red, admin }: { escenario: string; red: Red; admin: boolean }) {
   const ultimo = aHora(aMin(red.config.fin) - red.config.intervalo_min);
 
   const [origen, setOrigen] = useState("N01");
@@ -78,21 +74,17 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
     setAmpliado(false);
   }
 
-  function intercambiar() {
-    setOrigen(destino);
-    setDestino(origen);
-    setResultado(null);
-  }
-
   const r = resultado?.recorrido ?? null;
   const nodosRuta = useMemo(() => {
     if (!r) return [];
     const mapa = new Map(red.tramos.map((t) => [t.id, t]));
-    const lista: { id: string; hora: string }[] = [];
+    const lista: PuntoRuta[] = [];
     r.pasos.forEach((p, i) => {
       const t = mapa.get(p.tramo_id);
       if (!t) return;
-      if (i === 0) lista.push({ id: t.origen, hora: p.entrada });
+      const sale = { tramo: p.tramo_id, min: aMin(p.salida) - aMin(p.entrada) };
+      if (i === 0) lista.push({ id: t.origen, hora: p.entrada, sale });
+      else lista[lista.length - 1].sale = sale;
       lista.push({ id: t.destino, hora: p.salida });
     });
     return lista;
@@ -131,106 +123,122 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
       <Card titulo="Consultar ruta y sugerir salida" className="xl:sticky xl:top-5">
         <form
-          className="grid gap-4 p-5"
+          className="grid gap-6 p-5"
           onSubmit={(e) => {
             e.preventDefault();
             if (puedeCalcular) mutacion.mutate({ ampliar: false });
           }}
         >
-          <Campo etiqueta="Cargar viaje del escenario" id="viaje">
-            <select
-              id="viaje"
-              className={CLASE_INPUT}
-              defaultValue=""
-              onChange={(e) => e.target.value && cargarViaje(e.target.value)}
-            >
-              <option value="">Elegir un viaje…</option>
-              {red.viajes.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.id} · {v.origen} → {v.destino} · {v.salida_desde}–{v.salida_hasta}
-                </option>
-              ))}
-            </select>
-          </Campo>
+          {admin && (
+            <Campo etiqueta="Cargar viaje del escenario" id="viaje">
+              <select
+                id="viaje"
+                className={CLASE_INPUT}
+                defaultValue=""
+                onChange={(e) => e.target.value && cargarViaje(e.target.value)}
+              >
+                <option value="">Elegir un viaje…</option>
+                {red.viajes.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.id} · {v.origen} → {v.destino} · {v.salida_desde}–{v.salida_hasta}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+          )}
 
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-2 gap-y-3">
-            <div className="grid gap-3">
-              <Campo etiqueta="Origen" id="origen">
-                {selectNodos("origen", origen, setOrigen)}
-              </Campo>
-              <Campo etiqueta="Destino" id="destino">
-                {selectNodos("destino", destino, setDestino)}
-              </Campo>
-            </div>
-            <button
-              type="button"
-              onClick={intercambiar}
-              aria-label="Intercambiar origen y destino"
-              className="mb-[1.35rem] grid size-9 place-items-center rounded-full border border-line text-navy transition-colors hover:border-navy hover:bg-blue-soft"
+          <fieldset className="grid gap-3">
+            <legend className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Trayecto</legend>
+            <Campo
+              etiqueta={
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-navy" aria-hidden="true" />
+                  Origen
+                </span>
+              }
+              id="origen"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 2v12M5 14l-3-3M5 14l3-3M11 14V2M11 2 8 5M11 2l3 3" />
+              {selectNodos("origen", origen, setOrigen)}
+            </Campo>
+            <Campo
+              etiqueta={
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-2.5 rounded-full border-2 border-blue bg-white" aria-hidden="true" />
+                  Destino
+                </span>
+              }
+              id="destino"
+            >
+              {selectNodos("destino", destino, setDestino)}
+            </Campo>
+            <p className="flex items-start gap-2 rounded-xl bg-blue-soft px-3 py-2.5 text-[13px] leading-snug text-navy">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0" aria-hidden="true">
+                <path d="M3 2l4.5 11 1.6-4.4L13.5 7z" />
               </svg>
-            </button>
-          </div>
-          <p className="-mt-2 text-[13px] text-muted">
-            También puedes tocar un punto del mapa y elegir <strong className="text-navy">Salir desde aquí</strong> o{" "}
-            <strong className="text-navy">Ir hasta aquí</strong>.
-          </p>
+              <span>
+                Toca un punto del mapa y elige <strong>Salir desde aquí</strong> o <strong>Ir hasta aquí</strong>.
+              </span>
+            </p>
+          </fieldset>
 
-          <div className="grid grid-cols-2 gap-3">
+          <fieldset className="grid gap-3">
+            <legend className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Horario</legend>
+            <div className="grid grid-cols-2 gap-3">
             <Campo etiqueta="Hora de salida" id="salida">
-              <input
+              <SelectorHora
                 id="salida"
-                type="time"
-                step={300}
-                min={red.config.inicio}
-                max={ultimo}
-                required
-                className={`${CLASE_INPUT} tnum`}
-                value={salida}
-                onChange={(e) => {
-                  setSalida(e.target.value);
-                  if (e.target.value) setHora(e.target.value);
+                valor={salida}
+                desde={red.config.inicio}
+                hasta={ultimo}
+                paso={red.config.intervalo_min}
+                alCambiar={(v) => {
+                  setSalida(v);
+                  setHora(v);
                   setResultado(null);
                 }}
               />
             </Campo>
             <Campo etiqueta="Límite de llegada" id="limite">
-              <input
+              <SelectorHora
                 id="limite"
-                type="time"
-                step={300}
-                min={red.config.inicio}
-                max={red.config.fin}
-                required
-                className={`${CLASE_INPUT} tnum`}
-                value={limite}
-                onChange={(e) => {
-                  setLimite(e.target.value);
+                valor={limite}
+                desde={aHora(aMin(red.config.inicio) + red.config.intervalo_min)}
+                hasta={red.config.fin}
+                paso={red.config.intervalo_min}
+                alCambiar={(v) => {
+                  setLimite(v);
                   setResultado(null);
                 }}
               />
             </Campo>
-          </div>
+            </div>
+          </fieldset>
 
-          <Campo etiqueta="Flexibilidad de salida" id="flex">
-            <select
+          <fieldset className="grid gap-2.5">
+            <legend className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Flexibilidad de salida</legend>
+            <Segmentado
               id="flex"
-              className={CLASE_INPUT}
-              value={flex}
-              onChange={(e) => {
-                setFlex(Number(e.target.value));
+              etiqueta="Flexibilidad de salida"
+              valor={flex}
+              opciones={opcionesFlex.map((m) => ({ valor: m, texto: m === 0 ? "Exacta" : `+${m} min` }))}
+              alCambiar={(v) => {
+                setFlex(v);
                 setResultado(null);
               }}
-            >
-              {opcionesFlex.map((m) => (
-                <option key={m} value={m}>
-                  {etiquetaFlex(m)}
-                </option>
-              ))}
-            </select>
-          </Campo>
+            />
+            <p className="tnum text-[13px] text-muted">
+              {flex === 0 ? (
+                <>
+                  Saldrás exactamente a las <strong className="text-navy">{salida}</strong>.
+                </>
+              ) : (
+                <>
+                  Puede salir entre <strong className="text-navy">{salida}</strong> y{" "}
+                  <strong className="text-navy">{aHora(Math.min(aMin(salida) + flex, aMin(ultimo)))}</strong>.
+                </>
+              )}
+            </p>
+          </fieldset>
 
           {mismoNodo && <ErrorAviso mensaje="El origen y el destino deben ser distintos." />}
           {mutacion.isError && (
