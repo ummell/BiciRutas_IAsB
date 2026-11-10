@@ -29,7 +29,7 @@ Prototipo que debe funcionar en la demo. Incluye:
 | Estrategia | Reparte rutas y salidas para bajar la sobrecarga total (greedy por costo marginal y mejora local) | Hecho |
 | Resultados | Un JSON por escenario y comparación con la referencia | Hecho |
 | API | FastAPI local que expone consulta, lote y métricas | Hecho |
-| Web | Aplicación web con plano de la red, control de hora, comparación de lote y animaciones | Primer corte hecho |
+| Web | Aplicación web con plano de la red, control de hora, comparación de lote y animaciones | Hecho |
 
 No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
 
@@ -208,7 +208,17 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
   - 60 tests automáticos, incluido el contraste de cada tramo y cada minuto contra el modelo oficial del paquete en los seis escenarios.
   - Los seis resultados pasan `evaluar.py` con código de salida 0.
   - Las cifras de la referencia coinciden con `ejemplos/resumen_referencia.json`.
-- **Partes revisadas por el equipo:** por completar. Cada integrante debe poder explicar el cálculo de tiempos, la regla de seguridad, la medición de congestión y la estrategia de reparto.
+- **Quién explica cada parte:**
+
+  | Parte | Responsable de explicarla |
+  |-------|---------------------------|
+  | Cálculo de tiempos, regla de seguridad, grafo y estrategia de reparto | Samuel |
+  | Interfaz web, plano de la red y animaciones | Melissa |
+  | Consulta de ruta y lote en la API | Michael |
+  | Pruebas, contraste con el evaluador oficial y resultados | Lina |
+  | Propuesta de valor, experiencia de usuario y cierre del pitch | Juliana |
+
+  Todo el equipo debe poder responder, aunque no sea su parte, qué es la sobrecarga, desde qué hora es de noche y por qué hay viajes tardíos.
 
 
 ---
