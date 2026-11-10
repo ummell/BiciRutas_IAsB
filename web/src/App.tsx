@@ -5,59 +5,86 @@ import { ApiError } from "./lib/api";
 import { useEscenarios, useRed } from "./lib/hooks";
 import { ConsultaView } from "./views/ConsultaView";
 import { LoteView } from "./views/LoteView";
+import { UsuarioView } from "./views/UsuarioView";
 
-type Vista = "consulta" | "lote";
+type Vista = "usuario" | "consulta" | "lote";
+type Rol = "usuario" | "admin";
 
-const VISTAS: { id: Vista; nombre: string }[] = [
-  { id: "consulta", nombre: "Consulta de ruta" },
+const ROLES: { id: Rol; nombre: string; rol: string }[] = [
+  { id: "usuario", nombre: "Planear mi viaje", rol: "Usuario" },
+  { id: "admin", nombre: "Consulta y lote", rol: "Administrador" },
+];
+
+const PESTANAS_ADMIN: { id: Vista; nombre: string }[] = [
+  { id: "consulta", nombre: "Consulta avanzada" },
   { id: "lote", nombre: "Lote y comparación" },
 ];
 
 function leerHash(): { vista: Vista; escenario: string } {
   const [v, e] = window.location.hash.slice(1).split("/");
   return {
-    vista: v === "lote" ? "lote" : "consulta",
+    vista: v === "lote" || v === "consulta" ? v : "usuario",
     escenario: /^\d{2}_[a-z_]+$/.test(e ?? "") ? e : "01_viaje_normal",
   };
 }
 
 function Marca() {
   return (
-    <div className="flex items-center gap-3.5">
-      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
-        <rect width="44" height="44" rx="12" fill="#febd04" />
-        <path d="M9 31 L18 14 L26 24 L35 10" fill="none" stroke="#023365" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="9" cy="31" r="3.2" fill="#023365" />
-        <circle cx="35" cy="10" r="3.2" fill="#fff" stroke="#023365" strokeWidth="2" />
-      </svg>
+    <div className="flex items-center gap-3">
+      <span className="grid size-12 place-items-center rounded-2xl bg-white shadow-sm">
+        <img src="/marca/logo.png" alt="" className="h-9 w-auto" />
+      </span>
       <div className="leading-tight">
-        <p className="text-2xl font-extrabold tracking-tight text-white">BiciRutas</p>
-        <p className="text-xs font-semibold text-white/70">prototipo para ias software</p>
+        <p className="font-display text-[26px] font-extrabold tracking-tight text-white">BiciRutas</p>
+        <p className="text-xs font-medium text-white/70">Rutas seguras en bicicleta</p>
       </div>
     </div>
   );
 }
 
 function Trama() {
+  const camino = "M10 98 C 90 98, 120 70, 190 76 S 300 100, 360 86 S 450 58, 520 68";
+  const recorrido = "M10 98 C 90 98, 120 70, 190 76 S 248 90, 262 90";
   return (
     <svg
-      className="pointer-events-none absolute inset-y-0 right-[27rem] hidden h-full w-[34%] xl:block"
-      viewBox="0 0 520 120"
-      preserveAspectRatio="xMaxYMid slice"
+      className="trama pointer-events-none absolute inset-y-0 right-[27rem] hidden h-full w-[38%] xl:block"
+      viewBox="0 0 560 120"
+      preserveAspectRatio="xMaxYMid meet"
       aria-hidden="true"
     >
-      <g fill="none" stroke="#fff" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round">
-        <path d="M30 90 H150 L210 40 H330 L390 80 H500" />
-        <path d="M150 90 V118 M330 40 V6 M390 80 V118" />
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d={camino} stroke="#a9bba6" strokeOpacity="0.55" strokeWidth="2.4" strokeDasharray="1 9" className="trama-camino" />
+        <path d={recorrido} stroke="#e07a2b" strokeWidth="2.6" />
+
+        <g stroke="#ffffff" strokeOpacity="0.32" strokeWidth="1.8">
+          <path d="M70 92 V80" />
+          <circle cx="70" cy="73" r="7" />
+          <path d="M150 74 V64" />
+          <circle cx="150" cy="58" r="6" />
+          <path d="M408 70 V58" />
+          <circle cx="408" cy="51" r="7" />
+          <path d="M438 66 V40 H458 V66 M462 66 V30 H480 V66" />
+          <path d="M443 47 H453 M443 55 H453 M466 38 H476 M466 46 H476 M466 54 H476" strokeOpacity="0.5" />
+        </g>
+
+        <g className="trama-ciclista" transform="translate(268 78)" stroke="#ffffff" strokeWidth="2.2">
+          <circle cx="-16" cy="0" r="11" />
+          <circle cx="16" cy="0" r="11" />
+          <path d="M-16 0 L-4 -14 L10 -14 L16 0 M-4 -14 L0 0 L10 -14" />
+          <path d="M-4 -14 L-6 -19 M-9 -19 H-3" />
+          <path d="M10 -14 L8 -21 L13 -21" />
+          <path d="M-5 -19 L3 -33 M3 -31 L11 -22 M-5 -19 L4 -9 L0 0" />
+          <circle cx="7" cy="-38" r="4.5" />
+          <circle cx="-16" cy="0" r="2" fill="#e07a2b" stroke="none" />
+          <circle cx="16" cy="0" r="2" fill="#e07a2b" stroke="none" />
+        </g>
+
+        <g transform="translate(520 70)">
+          <path d="M0 0 C -4 -9 -14 -15 -14 -27 A 14 14 0 1 1 14 -27 C 14 -15 4 -9 0 0 Z" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="2.2" />
+          <path d="M -9.5 -31 A 10.5 10.5 0 0 1 9.5 -31" stroke="#e07a2b" strokeWidth="3" />
+          <circle cy="-26" r="4" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="2" />
+        </g>
       </g>
-      <g fill="#023365" stroke="#fff" strokeOpacity="0.28" strokeWidth="2">
-        <circle cx="30" cy="90" r="6" />
-        <circle cx="150" cy="90" r="6" />
-        <circle cx="210" cy="40" r="6" />
-        <circle cx="330" cy="40" r="6" />
-        <circle cx="390" cy="80" r="6" />
-      </g>
-      <circle cx="500" cy="80" r="7" fill="#0997e6" fillOpacity="0.9" />
     </svg>
   );
 }
@@ -75,6 +102,13 @@ export default function App() {
     setEscenarioEstado(e);
     window.location.hash = `${vista}/${e}`;
   };
+  const rol: Rol = vista === "usuario" ? "usuario" : "admin";
+  const [ultimaAdmin, setUltimaAdmin] = useState<Vista>(inicial.vista === "lote" ? "lote" : "consulta");
+  const elegirRol = (r: Rol) => setVista(r === "usuario" ? "usuario" : ultimaAdmin);
+  const elegirPestana = (v: Vista) => {
+    setUltimaAdmin(v);
+    setVista(v);
+  };
   const escenarios = useEscenarios();
   const red = useRed(escenario);
   const actual = escenarios.data?.find((e) => e.id === escenario);
@@ -86,23 +120,26 @@ export default function App() {
         <div className="relative mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <Marca />
           <nav aria-label="Vistas" className="flex rounded-2xl bg-white/10 p-1 backdrop-blur-sm">
-            {VISTAS.map((v) => (
+            {ROLES.map((v) => (
               <button
                 key={v.id}
-                onClick={() => setVista(v.id)}
-                aria-current={vista === v.id ? "page" : undefined}
+                onClick={() => elegirRol(v.id)}
+                aria-current={rol === v.id ? "page" : undefined}
                 className={`relative rounded-xl px-5 py-2.5 text-sm font-bold transition-colors ${
-                  vista === v.id ? "text-navy" : "text-white/80 hover:text-white"
+                  rol === v.id ? "text-navy" : "text-white/80 hover:text-white"
                 }`}
               >
-                {vista === v.id && (
+                {rol === v.id && (
                   <motion.span
                     layoutId="vista-activa"
                     className="absolute inset-0 rounded-xl bg-white"
                     transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
-                <span className="relative">{v.nombre}</span>
+                <span className="relative block text-left leading-tight">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider opacity-70">{v.rol}</span>
+                  {v.nombre}
+                </span>
               </button>
             ))}
           </nav>
@@ -110,6 +147,23 @@ export default function App() {
       </header>
 
       <div className="mx-auto flex w-full max-w-[1480px] flex-1 flex-col gap-6 px-5 pb-10 pt-6 lg:px-8">
+        {rol === "admin" && (
+        <div className="flex flex-col gap-4">
+        <div role="tablist" aria-label="Secciones de administración" className="flex w-fit gap-1 rounded-2xl border border-line bg-white p-1 shadow-card">
+          {PESTANAS_ADMIN.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={vista === t.id}
+              onClick={() => elegirPestana(t.id)}
+              className={`rounded-xl px-4 py-2 text-[14px] font-bold transition-colors ${
+                vista === t.id ? "bg-bosque text-white" : "text-muted hover:text-bosque"
+              }`}
+            >
+              {t.nombre}
+            </button>
+          ))}
+        </div>
         <section aria-label="Escenario" className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {(escenarios.data ?? []).map((e) => (
@@ -130,6 +184,8 @@ export default function App() {
           </div>
           {actual && <p className="max-w-3xl text-sm text-muted">{actual.objetivo}</p>}
         </section>
+        </div>
+        )}
 
         <main className="flex-1">
           {escenarios.isError && (
@@ -147,7 +203,9 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              {vista === "consulta" ? (
+              {vista === "usuario" ? (
+                <UsuarioView escenario={escenario} red={red.data} />
+              ) : vista === "consulta" ? (
                 <ConsultaView escenario={escenario} red={red.data} />
               ) : (
                 <LoteView escenario={escenario} red={red.data} />

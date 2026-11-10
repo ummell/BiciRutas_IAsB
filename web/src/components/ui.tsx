@@ -101,7 +101,7 @@ export function Campo({ etiqueta, children, id }: { etiqueta: string; children: 
 }
 
 export const CLASE_INPUT =
-  "w-full min-w-0 rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] font-medium text-ink transition-colors hover:border-[#b7c3d6] focus:border-blue";
+  "w-full min-w-0 rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] font-medium text-ink transition-colors hover:border-[#c9c2b2] focus:border-blue";
 
 export function ErrorAviso({ mensaje }: { mensaje: string }) {
   return (

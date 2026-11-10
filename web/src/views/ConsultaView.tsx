@@ -5,7 +5,7 @@ import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
 import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { plural } from "../lib/texto";
-import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
+import { MapaInteractivo } from "../components/MapaInteractivo";
 import { Resultado } from "../components/Resultado";
 import { Campo, Card, CLASE_INPUT, ErrorAviso } from "../components/ui";
 
@@ -20,12 +20,10 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
 
   const [origen, setOrigen] = useState("N01");
   const [destino, setDestino] = useState("N05");
-  const [turno, setTurno] = useState<"origen" | "destino">("origen");
   const [salida, setSalida] = useState("17:00");
   const [limite, setLimite] = useState("18:00");
   const [flex, setFlex] = useState(0);
   const [hora, setHora] = useState("17:00");
-  const [reproduciendo, setReproduciendo] = useState(false);
   const [ampliado, setAmpliado] = useState(false);
   const [resultado, setResultado] = useState<ConsultaOut | null>(null);
   const [version, setVersion] = useState(0);
@@ -41,25 +39,7 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
   );
 
   const estadoQ = useEstadoTramos(escenario, hora);
-  const estado = useMemo(
-    () => Object.fromEntries((estadoQ.data?.tramos ?? []).map((t) => [t.tramo_id, t])),
-    [estadoQ.data],
-  );
 
-  useEffect(() => {
-    if (!reproduciendo) return;
-    const id = window.setInterval(() => {
-      setHora((h) => {
-        const siguiente = aMin(h) + red.config.intervalo_min;
-        if (siguiente > aMin(ultimo)) {
-          setReproduciendo(false);
-          return h;
-        }
-        return aHora(siguiente);
-      });
-    }, 160);
-    return () => window.clearInterval(id);
-  }, [reproduciendo, red.config.intervalo_min, ultimo]);
 
   const mutacion = useMutation({
     mutationFn: ({ ampliar }: { ampliar: boolean }) => {
@@ -98,18 +78,6 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
     setAmpliado(false);
   }
 
-  function clicNodo(id: string) {
-    if (turno === "origen") {
-      setOrigen(id);
-      if (id === destino) setDestino("");
-      setTurno("destino");
-    } else {
-      setDestino(id);
-      if (id === origen) setOrigen("");
-      setTurno("origen");
-    }
-  }
-
   function intercambiar() {
     setOrigen(destino);
     setDestino(origen);
@@ -129,7 +97,6 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
     });
     return lista;
   }, [r, red.tramos]);
-  const horas = useMemo(() => Object.fromEntries(nodosRuta.map((p) => [p.id, p.hora])), [nodosRuta]);
 
   const mismoNodo = origen !== "" && origen === destino;
   const incompleto = origen === "" || destino === "";
@@ -137,9 +104,6 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
   const puedeAmpliar =
     resultado !== null && resultado.estado !== "A_TIEMPO" && !ampliado && aMin(limite) > aMin(salida);
 
-  const horaSpan = aMin(red.config.fin) - aMin(red.config.inicio);
-  const nocheIni = ((aMin(red.config.inicio_noche) - aMin(red.config.inicio)) / horaSpan) * 100;
-  const nocheAncho = ((aMin(red.config.fin_noche) - aMin(red.config.inicio_noche)) / horaSpan) * 100;
   const bloqueados = (estadoQ.data?.tramos ?? []).filter((t) => !t.seguro).length;
 
   const selectNodos = (id: string, valor: string, alCambiar: (v: string) => void) => (
@@ -210,8 +174,8 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
             </button>
           </div>
           <p className="-mt-2 text-[13px] text-muted">
-            También puedes tocar los nodos del plano:{" "}
-            <strong className="text-navy">{turno === "origen" ? "el siguiente será el origen" : "el siguiente será el destino"}</strong>.
+            También puedes tocar un punto del mapa y elegir <strong className="text-navy">Salir desde aquí</strong> o{" "}
+            <strong className="text-navy">Ir hasta aquí</strong>.
           </p>
 
           <div className="grid grid-cols-2 gap-3">
@@ -317,79 +281,29 @@ export function ConsultaView({ escenario, red }: { escenario: string; red: Red }
           </div>
 
           <div className="p-3">
-            <NetworkMap
+            <MapaInteractivo
+              escenario={escenario}
               red={red}
+              modo="usuario"
+              hora={hora}
+              onHora={setHora}
               origen={origen || undefined}
               destino={destino || undefined}
               ruta={r?.pasos}
               rutaTarde={r?.estado === "TARDE"}
               rutaKey={`${version}`}
-              horas={horas}
-              estado={estado}
-              onNodo={clicNodo}
+              onOrigen={(id) => {
+                setOrigen(id);
+                if (id === destino) setDestino("");
+                setResultado(null);
+              }}
+              onDestino={(id) => {
+                setDestino(id);
+                if (id === origen) setOrigen("");
+                setResultado(null);
+              }}
+              className="h-[min(640px,72vh)] min-h-[460px]"
             />
-          </div>
-
-          <div className="mx-5 mb-4 rounded-xl bg-ground px-4 py-3.5">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!reproduciendo && aMin(hora) >= aMin(ultimo)) setHora(red.config.inicio);
-                  setReproduciendo((p) => !p);
-                }}
-                className="grid size-11 shrink-0 place-items-center rounded-full bg-navy text-white transition-colors hover:bg-navy-deep"
-                aria-label={reproduciendo ? "Pausar" : "Reproducir la hora"}
-              >
-                {reproduciendo ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-                    <rect x="2" y="1" width="3.5" height="12" rx="1" />
-                    <rect x="8.5" y="1" width="3.5" height="12" rx="1" />
-                  </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-                    <path d="M3 1.5v11l9-5.5z" />
-                  </svg>
-                )}
-              </button>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between">
-                  <label htmlFor="hora" className="text-[13px] font-semibold text-muted">
-                    Hora en la red
-                  </label>
-                  <span className="tnum text-2xl font-extrabold text-navy">{hora}</span>
-                </div>
-                <div className="relative mt-1">
-                  <div
-                    className="pointer-events-none absolute -top-0.5 h-1.5 rounded-full bg-navy/25"
-                    style={{ left: `${nocheIni}%`, width: `${nocheAncho}%` }}
-                    title="Horario nocturno"
-                  />
-                  <input
-                    id="hora"
-                    type="range"
-                    className="mt-1.5 w-full"
-                    min={aMin(red.config.inicio)}
-                    max={aMin(ultimo)}
-                    step={red.config.intervalo_min}
-                    value={aMin(hora)}
-                    onChange={(e) => {
-                      setReproduciendo(false);
-                      setHora(aHora(Number(e.target.value)));
-                    }}
-                  />
-                </div>
-                <div className="tnum flex justify-between text-xs font-medium text-muted">
-                  <span>{red.config.inicio}</span>
-                  <span>noche desde {red.config.inicio_noche}</span>
-                  <span>{red.config.fin}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-line px-5 py-3.5">
-            <LeyendaMapa modo="consulta" />
           </div>
         </Card>
       </div>
