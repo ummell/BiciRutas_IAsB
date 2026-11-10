@@ -6,7 +6,7 @@ import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { plural } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
-import { Resultado } from "../components/Resultado";
+import { Resultado, type PuntoRuta } from "../components/Resultado";
 import { Campo, Card, CLASE_INPUT, ErrorAviso, SelectorHora } from "../components/ui";
 
 const FLEX_BASE = [0, 15, 30, 60];
@@ -114,11 +114,13 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   const nodosRuta = useMemo(() => {
     if (!r) return [];
     const mapa = new Map(red.tramos.map((t) => [t.id, t]));
-    const lista: { id: string; hora: string }[] = [];
+    const lista: PuntoRuta[] = [];
     r.pasos.forEach((p, i) => {
       const t = mapa.get(p.tramo_id);
       if (!t) return;
-      if (i === 0) lista.push({ id: t.origen, hora: p.entrada });
+      const sale = { tramo: p.tramo_id, min: aMin(p.salida) - aMin(p.entrada) };
+      if (i === 0) lista.push({ id: t.origen, hora: p.entrada, sale });
+      else lista[lista.length - 1].sale = sale;
       lista.push({ id: t.destino, hora: p.salida });
     });
     return lista;
