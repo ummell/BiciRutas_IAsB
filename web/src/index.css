@@ -1,28 +1,46 @@
 @import "tailwindcss";
-@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/inter";
 
+/* Paleta y tipografía según DESIGN.md (basadas en el logo).
+   Los nombres navy/blue/amber/rose se conservan para no tocar las clases de las vistas;
+   sus valores ahora son los de la marca. */
 @theme {
-  --font-sans: "Montserrat Variable", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif;
 
-  --color-navy: #023365;
-  --color-navy-deep: #011f3d;
-  --color-navy-soft: #083e76;
-  --color-blue: #0997e6;
-  --color-blue-deep: #0c6fab;
-  --color-blue-soft: #e8f5fd;
-  --color-amber: #febd04;
-  --color-amber-deep: #7a5800;
-  --color-amber-soft: #fff6d6;
-  --color-rose: #fb2f70;
-  --color-rose-deep: #d61f5f;
-  --color-rose-soft: #ffe8ef;
-  --color-ground: #f3f6fa;
-  --color-ink: #14213d;
-  --color-muted: #56627a;
-  --color-line: #dde4ee;
-  --color-edge: #8b98ad;
+  --color-bosque: #193a27;
+  --color-bosque-900: #0f2318;
+  --color-bosque-600: #2f7a4b;
+  --color-bosque-100: #e3ece5;
+  --color-rueda: #e07a2b;
+  --color-rueda-700: #a34e16;
+  --color-rueda-300: #f2a462;
+  --color-rueda-100: #fcebdd;
+  --color-salvia: #667f63;
+  --color-salvia-300: #a9bba6;
+  --color-salvia-100: #dde6d8;
 
-  --shadow-card: 0 1px 2px rgb(2 51 101 / 0.06), 0 8px 24px -12px rgb(2 51 101 / 0.18);
+  --color-navy: #193a27;
+  --color-navy-deep: #0f2318;
+  --color-navy-soft: #24503a;
+  --color-blue: #2f7a4b;
+  --color-blue-deep: #245f3b;
+  --color-blue-soft: #e3ece5;
+  --color-amber: #e07a2b;
+  --color-amber-light: #f2a462;
+  --color-amber-deep: #a34e16;
+  --color-amber-soft: #fcebdd;
+  --color-rose: #b5322a;
+  --color-rose-deep: #8f2620;
+  --color-rose-soft: #f7e1de;
+  --color-ground: #f4f1ea;
+  --color-ink: #1c2a22;
+  --color-muted: #566259;
+  --color-line: #e2ddd1;
+  --color-edge: #9aa69c;
+
+  --shadow-card: 0 1px 2px rgb(25 58 39 / 0.06), 0 8px 24px -12px rgb(25 58 39 / 0.2);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -36,6 +54,12 @@
   }
   body {
     min-height: 100vh;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.005em;
   }
   ::selection {
     background: var(--color-blue);
@@ -51,7 +75,7 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #b7c3d6 transparent;
+    scrollbar-color: #c9c2b2 transparent;
   }
   input[type="range"] {
     accent-color: var(--color-navy);
@@ -77,13 +101,40 @@
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #e6ecf4 25%, #f3f6fa 50%, #e6ecf4 75%);
+  background: linear-gradient(90deg, #ece7dc 25%, #f7f4ee 50%, #ece7dc 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton {
+    animation: none;
+  }
+}
+
+@keyframes trama-avanza {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+@keyframes trama-pedalea {
+  0%,
+  100% {
+    transform: translate(268px, 78px);
+  }
+  50% {
+    transform: translate(268px, 76.5px);
+  }
+}
+.trama-camino {
+  animation: trama-avanza 2.4s linear infinite;
+}
+.trama-ciclista {
+  animation: trama-pedalea 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trama-camino,
+  .trama-ciclista {
     animation: none;
   }
 }
