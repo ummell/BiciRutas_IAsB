@@ -187,6 +187,29 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 - La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
 - No es una solución óptima global ni un simulador de tráfico real.
 
+## Equipo y tareas
+
+| Cargo | Responsable | Funciones |
+|-------|-------------|-----------|
+| Programación | Samuel | Desarrollo de backend y API |
+| Programación | Melissa | Desarrollo de frontend |
+| Programación | Michael | Desarrollador |
+| Análisis | Lina | Análisis de software y QA |
+| Administración y mercadeo | Juliana | Mercadeo, CRM y experiencia de usuario |
+
+## Uso de IA
+
+- **Herramienta:** Kiro (asistente de programación con IA) dentro del editor.
+- **Para qué se usó:**
+  - Leer y resumir la documentación del reto y planear las fases.
+  - Escribir el motor en Python (grafo, tiempos, seguridad, congestión y estrategia de reparto), la API y la aplicación web.
+  - Escribir los tests y el script que genera los resultados.
+- **Cómo se comprobó lo generado:**
+  - 60 tests automáticos, incluido el contraste de cada tramo y cada minuto contra el modelo oficial del paquete en los seis escenarios.
+  - Los seis resultados pasan `evaluar.py` con código de salida 0.
+  - Las cifras de la referencia coinciden con `ejemplos/resumen_referencia.json`.
+- **Partes revisadas por el equipo:** por completar. Cada integrante debe poder explicar el cálculo de tiempos, la regla de seguridad, la medición de congestión y la estrategia de reparto.
+
 
 ---
 
