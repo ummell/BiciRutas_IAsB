@@ -110,12 +110,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
     }
   }
 
-  function intercambiar() {
-    setOrigen(destino);
-    setDestino(origen);
-    setResultado(null);
-  }
-
   const r = resultado?.recorrido ?? null;
   const nodosRuta = useMemo(() => {
     if (!r) return [];
@@ -191,25 +185,13 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
             </Campo>
           )}
 
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-2 gap-y-3">
-            <div className="grid gap-3">
-              <Campo etiqueta="Origen" id="origen">
-                {selectNodos("origen", origen, setOrigen)}
-              </Campo>
-              <Campo etiqueta="Destino" id="destino">
-                {selectNodos("destino", destino, setDestino)}
-              </Campo>
-            </div>
-            <button
-              type="button"
-              onClick={intercambiar}
-              aria-label="Intercambiar origen y destino"
-              className="mb-[1.35rem] grid size-9 place-items-center rounded-full border border-line text-navy transition-colors hover:border-navy hover:bg-blue-soft"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 2v12M5 14l-3-3M5 14l3-3M11 14V2M11 2 8 5M11 2l3 3" />
-              </svg>
-            </button>
+          <div className="grid gap-3">
+            <Campo etiqueta="Origen" id="origen">
+              {selectNodos("origen", origen, setOrigen)}
+            </Campo>
+            <Campo etiqueta="Destino" id="destino">
+              {selectNodos("destino", destino, setDestino)}
+            </Campo>
           </div>
           <p className="-mt-2 text-[13px] text-muted">
             También puedes tocar los nodos del plano:{" "}
