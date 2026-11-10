@@ -1,0 +1,317 @@
+{
+  "valido": true,
+  "escenario_id": "03_cierre_temporal",
+  "resumen": {
+    "sobrecarga_acumulada_bici_intervalo": 48,
+    "pares_saturados": 6,
+    "maxima_relacion_carga_capacidad": 3.6667,
+    "minutos_totales_viaje": 120,
+    "minutos_totales_tardanza": 0,
+    "viajes_a_tiempo": 10,
+    "viajes_tarde": 0,
+    "viajes_sin_ruta_segura": 0
+  },
+  "advertencia": "Modelo educativo de red ficticia; métricas calculadas con las reglas comunes.",
+  "viajes": [
+    {
+      "viaje_id": "V001",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V002",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V003",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V004",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V005",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V006",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V007",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V008",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V009",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    },
+    {
+      "viaje_id": "V010",
+      "estado": "A_TIEMPO",
+      "salida": "17:25",
+      "llegada": "17:37",
+      "duracion_min": 12,
+      "tardanza_min": 0,
+      "pasos": [
+        {
+          "tramo_id": "T01",
+          "entrada": "17:25",
+          "salida": "17:28"
+        },
+        {
+          "tramo_id": "T02",
+          "entrada": "17:28",
+          "salida": "17:31"
+        },
+        {
+          "tramo_id": "T03",
+          "entrada": "17:31",
+          "salida": "17:34"
+        },
+        {
+          "tramo_id": "T04",
+          "entrada": "17:34",
+          "salida": "17:37"
+        }
+      ]
+    }
+  ]
+}
