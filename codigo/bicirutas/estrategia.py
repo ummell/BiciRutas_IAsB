@@ -1,15 +1,3 @@
-"""Estrategia de reparto: greedy por costo marginal y mejora local.
-
-Idea: cada recomendación cambia la carga que verán los demás viajes. En vez de dar
-a todos la ruta más corta, se asigna cada viaje al (ruta, salida) seguro que menos
-sobrecarga agrega dado lo ya asignado, y luego se reconsidera cada viaje con el resto
-fijo hasta que ya no hay mejora.
-
-Garantías (las reglas del reto no se negocian):
-- Solo se usan candidatos seguros y dentro de la ventana de salida.
-- Si un viaje tiene ruta segura se le asigna una, aunque llegue tarde.
-- SIN_RUTA_SEGURA solo cuando no existe ningún candidato seguro.
-"""
 import random
 
 from .consulta import candidatos
@@ -17,12 +5,10 @@ from .datos import Escenario
 from .lote import Asignacion, Ocupacion
 from .modelo import Recorrido
 
-# Con este peso la congestión manda y la tardanza solo desempata (orden lexicográfico).
 PESO_CONGESTION = 1000
 
 
 def _puntaje(ocupacion: Ocupacion, r: Recorrido, peso_congestion: int) -> tuple:
-    """Menor es mejor: congestión ponderada + minutos tarde; luego duración y desempates."""
     costo = ocupacion.costo_marginal(r) * peso_congestion + r.tardanza_min
     return (costo, r.duracion_min, r.salida, [p.tramo_id for p in r.pasos])
 
@@ -40,7 +26,6 @@ def _una_corrida(esc, viajes, opciones, orden, peso_congestion, pasadas) -> tupl
     ocupacion = Ocupacion(esc)
     asignaciones: dict = {}
 
-    # 1. Greedy: cada viaje elige con la carga que dejaron los anteriores.
     for v in orden:
         cand = opciones[v["id"]]
         if not cand:
@@ -50,7 +35,6 @@ def _una_corrida(esc, viajes, opciones, orden, peso_congestion, pasadas) -> tupl
         ocupacion.agregar(elegido)
         asignaciones[v["id"]] = Asignacion(v["id"], elegido)
 
-    # 2. Mejora local: sacar un viaje, volver a elegir con el resto fijo.
     for _ in range(pasadas):
         antes = _objetivo(asignaciones, ocupacion)
         for v in orden:
@@ -74,15 +58,9 @@ def repartir(
     reinicios: int = 8,
     semilla: int = 2026,
 ) -> list:
-    """Reparte el lote del escenario y devuelve una Asignacion por viaje (orden original).
-
-    Prueba el orden de menos a más opciones y `reinicios` órdenes al azar con semilla
-    fija (resultado reproducible), y se queda con el de menor (sobrecarga, tardanza).
-    """
     viajes = esc.viajes
     opciones = {v["id"]: candidatos(esc, v) for v in viajes}
 
-    # Los viajes más restringidos eligen primero; así no pierden sus pocas opciones.
     ordenes = [sorted(viajes, key=lambda v: (len(opciones[v["id"]]), v["orden"]))]
     azar = random.Random(semilla)
     for _ in range(reinicios):

@@ -1,4 +1,3 @@
-"""Pruebas de la consulta de ruta y hora de salida."""
 import pytest
 from test_modelo import ESCENARIOS, oficial
 
@@ -29,7 +28,6 @@ def test_escenario_06_todo_tarde_con_ruta_segura():
 
 
 def test_cierre_t03_no_se_usa_durante_el_cierre():
-    """Escenario 03: ningún candidato cruza T03 solapado con [17:00, 17:30)."""
     esc = cargar_escenario("03_cierre_temporal")
     for viaje in esc.viajes:
         for r in candidatos(esc, viaje):
@@ -46,7 +44,6 @@ def test_consulta_libre_sale_exactamente_a_la_hora():
 
 @pytest.mark.parametrize("escenario", ESCENARIOS)
 def test_mejor_individual_coincide_con_la_referencia_oficial(escenario):
-    """Salida, tramos y estado idénticos a referencia.py para todos los viajes."""
     from referencia import crear_referencia
 
     esc = cargar_escenario(escenario)

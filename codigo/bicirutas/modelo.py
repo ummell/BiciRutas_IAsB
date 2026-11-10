@@ -1,4 +1,3 @@
-"""Tiempo de paso, seguridad y simulación de un recorrido (reglas 1 a 3)."""
 import math
 from dataclasses import dataclass
 
@@ -7,13 +6,13 @@ from .tiempo import a_hora, a_minutos, solapa
 
 
 class RutaInvalida(ValueError):
-    """El tramo o recorrido incumple una regla de seguridad o de formato."""
+    pass
 
 
 @dataclass
 class Paso:
     tramo_id: str
-    entrada: int  # minutos desde medianoche
+    entrada: int
     salida: int
 
 
@@ -23,13 +22,12 @@ class Recorrido:
     salida: int
     llegada: int
     pasos: list
-    estado: str  # A_TIEMPO | TARDE
+    estado: str
     duracion_min: int
     tardanza_min: int
 
 
 def condicion_vigente(esc: Escenario, tramo_id: str, minuto: int) -> dict:
-    """Condición cuyo intervalo [inicio, fin) contiene el minuto de entrada."""
     filas = [
         c
         for c in esc.condiciones[tramo_id]
@@ -41,7 +39,6 @@ def condicion_vigente(esc: Escenario, tramo_id: str, minuto: int) -> dict:
 
 
 def duracion_tramo(esc: Escenario, tramo_id: str, entrada: int) -> int:
-    """ceil(base x factor x (1 + coef x carga_inicial / capacidad))."""
     t = esc.tramos[tramo_id]
     c = condicion_vigente(esc, tramo_id, entrada)
     coef = esc.config["coeficiente_carga_inicial"]
@@ -53,7 +50,6 @@ def duracion_tramo(esc: Escenario, tramo_id: str, entrada: int) -> int:
 
 
 def pasar_tramo(esc: Escenario, tramo_id: str, entrada: int) -> int:
-    """Devuelve el minuto de salida del tramo o lanza RutaInvalida si no es seguro."""
     cfg = esc.config
     fin_horizonte = a_minutos(cfg["fin"])
     if entrada >= fin_horizonte:
@@ -77,7 +73,6 @@ def pasar_tramo(esc: Escenario, tramo_id: str, entrada: int) -> int:
 
 
 def simular_recorrido(esc: Escenario, viaje: dict, salida: int, tramos: list) -> Recorrido:
-    """Valida y calcula un recorrido completo. Lanza RutaInvalida si incumple algo."""
     cfg = esc.config
     inicio = a_minutos(cfg["inicio"])
     if not a_minutos(viaje["salida_desde"]) <= salida <= a_minutos(viaje["salida_hasta"]):

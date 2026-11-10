@@ -1,8 +1,3 @@
-"""Genera los resultados de entrega, los valida y arma la comparación.
-
-Uso (desde mi-equipo/):
-    PYTHONPATH=codigo .venv/bin/python -m bicirutas.generar
-"""
 import argparse
 import json
 import subprocess
@@ -24,7 +19,6 @@ ESCENARIOS = [
 
 
 def validar_con_evaluador(escenario: str, archivo: Path) -> bool:
-    """Ejecuta el evaluador oficial; código de salida 0 = formato y recorridos aceptados."""
     evaluador = carpeta_paquete() / "herramientas" / "evaluar.py"
     proceso = subprocess.run(
         [sys.executable, str(evaluador), escenario, str(archivo)],
@@ -35,7 +29,6 @@ def validar_con_evaluador(escenario: str, archivo: Path) -> bool:
 
 
 def mejora_porcentual(referencia: int, equipo: int) -> float | None:
-    """100 x (ref - equipo) / ref; None ('no aplica') si la referencia vale cero."""
     return None if referencia == 0 else round(100 * (referencia - equipo) / referencia, 1)
 
 

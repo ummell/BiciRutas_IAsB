@@ -1,4 +1,3 @@
-"""Pruebas de la API con el cliente de pruebas de FastAPI (sin levantar servidor)."""
 import pytest
 from fastapi.testclient import TestClient
 

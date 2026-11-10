@@ -1,4 +1,3 @@
-"""Carga de la red y de los escenarios (solo JSON, que es la fuente canónica)."""
 import json
 import os
 from dataclasses import dataclass, field
@@ -14,18 +13,16 @@ load_dotenv()
 class Escenario:
     id: str
     config: dict
-    tramos: dict  # id de tramo -> fila de tramos.json
-    condiciones: dict  # id de tramo -> lista de condiciones
-    restricciones: dict  # id de tramo -> lista de restricciones
+    tramos: dict
+    condiciones: dict
+    restricciones: dict
     viajes: list
     grafo: nx.MultiDiGraph
-    nodos: list  # filas de nodos.json (id, nombre, x, y)
-    # Rutas simples ya enumeradas por (origen, destino); se llena en consulta.py
+    nodos: list
     cache_rutas: dict = field(default_factory=dict)
 
 
 def carpeta_paquete() -> Path:
-    """Carpeta del paquete BiciRutas, definida en .env (BICIRUTAS_PAQUETE)."""
     return Path(os.environ.get("BICIRUTAS_PAQUETE", "../gestion")).resolve()
 
 
@@ -34,7 +31,6 @@ def _leer(ruta: Path):
 
 
 def construir_grafo(nodos: list, tramos: dict) -> nx.MultiDiGraph:
-    """Grafo dirigido: una arista por tramo, con el id del tramo como clave."""
     g = nx.MultiDiGraph()
     for n in nodos:
         g.add_node(n["id"], nombre=n["nombre"], x=n["x"], y=n["y"])
@@ -73,5 +69,4 @@ def cargar_escenario(escenario_id: str, paquete: Path | None = None) -> Escenari
 
 
 def listar_escenarios(paquete: Path | None = None) -> list:
-    """Índice de escenarios del paquete (id, nombre, objetivo, cantidad de viajes)."""
     return _leer((paquete or carpeta_paquete()) / "escenarios" / "indice.json")

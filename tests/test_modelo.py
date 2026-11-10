@@ -1,4 +1,3 @@
-"""Pruebas del modelo base: ejemplos manuales de la documentación y bordes."""
 import sys
 
 import pytest
@@ -7,9 +6,8 @@ from bicirutas.datos import cargar_escenario, carpeta_paquete
 from bicirutas.modelo import RutaInvalida, pasar_tramo, simular_recorrido
 from bicirutas.tiempo import a_hora, a_minutos, solapa
 
-# Oráculo: el modelo oficial del paquete, solo para contrastar (no se importa en el código).
 sys.path.insert(0, str(carpeta_paquete() / "herramientas"))
-import modelo as oficial  # noqa: E402
+import modelo as oficial
 
 ESCENARIOS = [
     "01_viaje_normal",
@@ -28,7 +26,6 @@ def test_intervalos_excluyen_el_final():
 
 
 def test_ejemplo_manual_escenario_01():
-    """N01 -> N05 saliendo 17:00 por T01-T04: cada tramo dura 3, llega 17:12 a tiempo."""
     esc = cargar_escenario("01_viaje_normal")
     viaje = esc.viajes[0]
     r = simular_recorrido(esc, viaje, a_minutos("17:00"), ["T01", "T02", "T03", "T04"])
@@ -44,7 +41,7 @@ def test_ejemplo_manual_escenario_01():
 def test_cierre_temporal_t03_en_el_borde():
     esc = cargar_escenario("03_cierre_temporal")
     with pytest.raises(RutaInvalida):
-        pasar_tramo(esc, "T03", a_minutos("17:27"))  # termina 17:30+, se solapa
+        pasar_tramo(esc, "T03", a_minutos("17:27"))
     assert pasar_tramo(esc, "T03", a_minutos("17:30")) > a_minutos("17:30")
 
 
@@ -79,7 +76,6 @@ def test_no_se_puede_invertir_un_tramo_sin_fila_opuesta():
 
 @pytest.mark.parametrize("escenario", ESCENARIOS)
 def test_coincide_con_el_modelo_oficial(escenario):
-    """Para cada tramo y cada minuto del horizonte, resultado idéntico al oficial."""
     esc = cargar_escenario(escenario)
     d = oficial.cargar(escenario)
     for tid in esc.tramos:

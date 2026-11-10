@@ -1,4 +1,3 @@
-"""La estrategia debe ser válida para el evaluador oficial y no empeorar la referencia."""
 import pytest
 from test_modelo import ESCENARIOS, oficial
 
@@ -30,7 +29,6 @@ def test_no_empeora_la_congestion_ni_descarta_viajes(repartos, escenario):
     esc, asignaciones, referencia = repartos[escenario]
     propio, base = metricas(esc, asignaciones), metricas(esc, referencia)
     assert propio["sobrecarga_acumulada_bici_intervalo"] <= base["sobrecarga_acumulada_bici_intervalo"]
-    # Mismos viajes sin ruta segura que la referencia: no se descarta ninguno para ganar.
     assert propio["viajes_sin_ruta_segura"] == base["viajes_sin_ruta_segura"]
     assert len(asignaciones) == len(esc.viajes)
 

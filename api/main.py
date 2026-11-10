@@ -1,8 +1,3 @@
-"""API local de BiciRutas: expone el motor para la aplicación web.
-
-Ejecutar desde mi-equipo/:
-    PYTHONPATH=codigo .venv/bin/python -m uvicorn api.main:app --port 8000
-"""
 from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException, Query
@@ -56,7 +51,6 @@ def _asignaciones(asignaciones: list) -> list:
 
 
 def _mapa_calor(esc, asignaciones: list) -> list:
-    """Solo pares con carga (inicial o asignada) para no enviar 28 x 72 filas vacías."""
     filas = construir_ocupacion(esc, asignaciones).detalle()
     return [f for f in filas if f["carga_total"] > 0]
 
@@ -73,7 +67,6 @@ def escenarios():
 
 @app.get("/api/escenarios/{escenario_id}/red")
 def red(escenario_id: str):
-    """Nodos, tramos, restricciones y viajes: lo necesario para dibujar y consultar."""
     esc = _escenario(escenario_id)
     return dict(
         escenario_id=esc.id,
@@ -95,7 +88,6 @@ class ConsultaIn(BaseModel):
 
 @app.post("/api/escenarios/{escenario_id}/consulta")
 def consulta(escenario_id: str, datos: ConsultaIn):
-    """Recomendación para un viaje suelto: ruta, salida, llegada y estado."""
     esc = _escenario(escenario_id)
     nodos = {n["id"] for n in esc.nodos}
     if datos.origen not in nodos or datos.destino not in nodos:
@@ -138,13 +130,11 @@ def _lote(escenario_id: str, peso: int):
 
 @app.get("/api/escenarios/{escenario_id}/lote")
 def lote(escenario_id: str, peso: int = Query(PESO_CONGESTION, ge=1, le=100000)):
-    """Reparto del escenario completo, comparado con la referencia sin estrategia."""
     return _lote(escenario_id, peso)
 
 
 @app.get("/api/escenarios/{escenario_id}/estado-tramos")
 def estado_tramos(escenario_id: str, hora: str = Query(pattern=HORA)):
-    """Qué tramos se pueden usar entrando a esa hora y por qué no (para el control de hora)."""
     esc = _escenario(escenario_id)
     minuto = a_minutos(hora)
     if not a_minutos(esc.config["inicio"]) <= minuto < a_minutos(esc.config["fin"]):
