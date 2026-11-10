@@ -7,7 +7,7 @@ import { aHora, aMin } from "../lib/time";
 import { plural } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
 import { Resultado } from "../components/Resultado";
-import { Campo, Card, CLASE_INPUT, ErrorAviso } from "../components/ui";
+import { Campo, Card, CLASE_INPUT, ErrorAviso, SelectorHora } from "../components/ui";
 
 const FLEX_BASE = [0, 15, 30, 60];
 
@@ -200,34 +200,28 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
 
           <div className="grid grid-cols-2 gap-3">
             <Campo etiqueta="Hora de salida" id="salida">
-              <input
+              <SelectorHora
                 id="salida"
-                type="time"
-                step={300}
-                min={red.config.inicio}
-                max={ultimo}
-                required
-                className={`${CLASE_INPUT} tnum`}
-                value={salida}
-                onChange={(e) => {
-                  setSalida(e.target.value);
-                  if (e.target.value) setHora(e.target.value);
+                valor={salida}
+                desde={red.config.inicio}
+                hasta={ultimo}
+                paso={red.config.intervalo_min}
+                alCambiar={(v) => {
+                  setSalida(v);
+                  setHora(v);
                   setResultado(null);
                 }}
               />
             </Campo>
             <Campo etiqueta="Límite de llegada" id="limite">
-              <input
+              <SelectorHora
                 id="limite"
-                type="time"
-                step={300}
-                min={red.config.inicio}
-                max={red.config.fin}
-                required
-                className={`${CLASE_INPUT} tnum`}
-                value={limite}
-                onChange={(e) => {
-                  setLimite(e.target.value);
+                valor={limite}
+                desde={aHora(aMin(red.config.inicio) + red.config.intervalo_min)}
+                hasta={red.config.fin}
+                paso={red.config.intervalo_min}
+                alCambiar={(v) => {
+                  setLimite(v);
                   setResultado(null);
                 }}
               />
