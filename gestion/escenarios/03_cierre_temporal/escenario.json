@@ -1,0 +1,11 @@
+{
+  "id": "03_cierre_temporal",
+  "nombre": "Cierre temporal",
+  "objetivo": "Evitar T03 mientras esté cerrado; puede usarse fuera de su vigencia.",
+  "cantidad_viajes": 10,
+  "archivos": [
+    "condiciones.json",
+    "restricciones.json",
+    "viajes.json"
+  ]
+}

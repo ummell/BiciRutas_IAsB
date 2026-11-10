@@ -1,0 +1,602 @@
+[
+  {
+    "id": "V001",
+    "orden": 1,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V002",
+    "orden": 2,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V003",
+    "orden": 3,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V004",
+    "orden": 4,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V005",
+    "orden": 5,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V006",
+    "orden": 6,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V007",
+    "orden": 7,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V008",
+    "orden": 8,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V009",
+    "orden": 9,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V010",
+    "orden": 10,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V011",
+    "orden": 11,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V012",
+    "orden": 12,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V013",
+    "orden": 13,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V014",
+    "orden": 14,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V015",
+    "orden": 15,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V016",
+    "orden": 16,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V017",
+    "orden": 17,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V018",
+    "orden": 18,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V019",
+    "orden": 19,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V020",
+    "orden": 20,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V021",
+    "orden": 21,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V022",
+    "orden": 22,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V023",
+    "orden": 23,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V024",
+    "orden": 24,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V025",
+    "orden": 25,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V026",
+    "orden": 26,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V027",
+    "orden": 27,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V028",
+    "orden": 28,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V029",
+    "orden": 29,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V030",
+    "orden": 30,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V031",
+    "orden": 31,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V032",
+    "orden": 32,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V033",
+    "orden": 33,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V034",
+    "orden": 34,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V035",
+    "orden": 35,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V036",
+    "orden": 36,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V037",
+    "orden": 37,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V038",
+    "orden": 38,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V039",
+    "orden": 39,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V040",
+    "orden": 40,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V041",
+    "orden": 41,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V042",
+    "orden": 42,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V043",
+    "orden": 43,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V044",
+    "orden": 44,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V045",
+    "orden": 45,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V046",
+    "orden": 46,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V047",
+    "orden": 47,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V048",
+    "orden": 48,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V049",
+    "orden": 49,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V050",
+    "orden": 50,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V051",
+    "orden": 51,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V052",
+    "orden": 52,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V053",
+    "orden": 53,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V054",
+    "orden": 54,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V055",
+    "orden": 55,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V056",
+    "orden": 56,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V057",
+    "orden": 57,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V058",
+    "orden": 58,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V059",
+    "orden": 59,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V060",
+    "orden": 60,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:10",
+    "llegada_limite": "17:30",
+    "modalidad": "publica"
+  }
+]

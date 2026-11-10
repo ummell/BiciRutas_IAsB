@@ -1,0 +1,32 @@
+[
+  {
+    "id": "V001",
+    "orden": 1,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:00",
+    "llegada_limite": "17:01",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V002",
+    "orden": 2,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:00",
+    "llegada_limite": "17:01",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V003",
+    "orden": 3,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "17:00",
+    "salida_hasta": "17:00",
+    "llegada_limite": "17:01",
+    "modalidad": "propia"
+  }
+]

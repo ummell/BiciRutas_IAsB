@@ -1,0 +1,4 @@
+id,orden,origen,destino,salida_desde,salida_hasta,llegada_limite,modalidad
+V001,1,N01,N05,17:00,17:00,17:01,propia
+V002,2,N01,N05,17:00,17:00,17:01,publica
+V003,3,N01,N05,17:00,17:00,17:01,propia

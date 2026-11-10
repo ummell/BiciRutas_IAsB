@@ -1,0 +1,11 @@
+{
+  "id": "04_recorrido_nocturno",
+  "nombre": "Recorrido nocturno",
+  "objetivo": "Evitar T02 por falta de iluminación durante la noche.",
+  "cantidad_viajes": 10,
+  "archivos": [
+    "condiciones.json",
+    "restricciones.json",
+    "viajes.json"
+  ]
+}

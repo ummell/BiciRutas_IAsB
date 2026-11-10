@@ -1,0 +1,102 @@
+[
+  {
+    "id": "V001",
+    "orden": 1,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V002",
+    "orden": 2,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V003",
+    "orden": 3,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V004",
+    "orden": 4,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V005",
+    "orden": 5,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V006",
+    "orden": 6,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V007",
+    "orden": 7,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V008",
+    "orden": 8,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "publica"
+  },
+  {
+    "id": "V009",
+    "orden": 9,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "propia"
+  },
+  {
+    "id": "V010",
+    "orden": 10,
+    "origen": "N01",
+    "destino": "N05",
+    "salida_desde": "18:00",
+    "salida_hasta": "18:10",
+    "llegada_limite": "18:45",
+    "modalidad": "publica"
+  }
+]

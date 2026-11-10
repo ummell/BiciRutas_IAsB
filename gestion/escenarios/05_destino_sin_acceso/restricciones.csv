@@ -1,0 +1,6 @@
+id,tramo_id,inicio,fin,motivo
+R01,T27,15:00,21:00,riesgo_vial_alto
+R02,T28,15:00,21:00,no_habilitado_bicicletas
+R03,T18,18:00,21:00,riesgo_seguridad_personal
+R04,T25,15:00,21:00,cierre_total
+R05,T26,15:00,21:00,cierre_total
