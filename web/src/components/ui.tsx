@@ -1,6 +1,7 @@
 import { animate, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Estado } from "../lib/api";
+import { aHora, aMin } from "../lib/time";
 import { ETIQUETA_ESTADO } from "../lib/texto";
 
 export function AnimatedNumber({ value, className }: { value: number; className?: string }) {
@@ -102,6 +103,36 @@ export function Campo({ etiqueta, children, id }: { etiqueta: string; children: 
 
 export const CLASE_INPUT =
   "w-full min-w-0 rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] font-medium text-ink transition-colors hover:border-[#b7c3d6] focus:border-blue";
+
+export function SelectorHora({
+  id,
+  valor,
+  desde,
+  hasta,
+  paso,
+  alCambiar,
+}: {
+  id: string;
+  valor: string;
+  desde: string;
+  hasta: string;
+  paso: number;
+  alCambiar: (v: string) => void;
+}) {
+  const opciones: number[] = [];
+  for (let m = aMin(desde); m <= aMin(hasta); m += paso) opciones.push(m);
+  if (valor && !opciones.includes(aMin(valor))) opciones.push(aMin(valor));
+  opciones.sort((a, b) => a - b);
+  return (
+    <select id={id} className={`${CLASE_INPUT} tnum`} value={valor} onChange={(e) => alCambiar(e.target.value)}>
+      {opciones.map((m) => (
+        <option key={m} value={aHora(m)}>
+          {aHora(m)}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 export function ErrorAviso({ mensaje }: { mensaje: string }) {
   return (
