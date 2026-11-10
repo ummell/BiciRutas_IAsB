@@ -1,6 +1,6 @@
 import type { Nodo, Tramo } from "./api";
 
-export const NODE_R = 22;
+export const NODE_R = 24;
 const GAP = 5;
 const PARALELO = 10;
 

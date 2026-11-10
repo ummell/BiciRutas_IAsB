@@ -10,6 +10,8 @@ import { AnimatedNumber, Card, ErrorAviso, EstadoChip } from "../components/ui";
 
 const PESOS = [1, 2, 3, 10, 1000];
 
+const ORDEN: Record<Estado, number> = { TARDE: 0, SIN_RUTA_SEGURA: 1, A_TIEMPO: 2 };
+
 type Lado = "equipo" | "referencia";
 type Filtro = "TODOS" | Estado;
 
@@ -61,11 +63,13 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
     if (!datos) return [];
     const ref = new Map(datos.referencia.asignaciones.map((a) => [a.viaje_id, a]));
     const viajes = new Map(red.viajes.map((v) => [v.id, v]));
-    return datos.equipo.asignaciones.map((a) => ({
-      equipo: a,
-      referencia: ref.get(a.viaje_id) as Asignacion,
-      viaje: viajes.get(a.viaje_id)!,
-    }));
+    return datos.equipo.asignaciones
+      .map((a) => ({
+        equipo: a,
+        referencia: ref.get(a.viaje_id) as Asignacion,
+        viaje: viajes.get(a.viaje_id)!,
+      }))
+      .sort((a, b) => ORDEN[a.equipo.estado] - ORDEN[b.equipo.estado] || a.viaje.orden - b.viaje.orden);
   }, [datos, red.viajes]);
 
   const visibles = filas.filter((f) => filtro === "TODOS" || f.equipo.estado === filtro);
@@ -89,89 +93,76 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="p-5">
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
-          <div>
-            <h2 className="text-[15px] font-bold text-navy">Qué pesa más</h2>
-            <p className="mt-1 text-sm text-muted">
-              Reducir la congestión puede obligar a algunos viajes a salir en otro momento o por otro corredor. Ajusta el
-              equilibrio con la puntualidad.
-            </p>
-          </div>
-          <div>
-            <input
-              type="range"
-              className="w-full"
-              min={0}
-              max={PESOS.length - 1}
-              step={1}
-              value={idxPeso}
-              onChange={(e) => setIdxPeso(Number(e.target.value))}
-              aria-label="Equilibrio entre puntualidad y reducción de congestión"
-              aria-valuetext={idxPeso === PESOS.length - 1 ? "Prioriza reducir la congestión" : `Nivel ${idxPeso + 1} de ${PESOS.length}`}
-            />
-            <div className="mt-1 flex justify-between text-xs font-semibold text-muted">
-              <span>Más puntualidad</span>
-              <span>Más reducción de congestión</span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {!datos || !mEq || !mRef || !calc ? (
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-3">
-          <Esqueleto alto="h-44" />
-          <Esqueleto alto="h-44" />
-          <Esqueleto alto="h-44" />
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          <Esqueleto alto="h-72" />
+          <Esqueleto alto="h-72" />
         </div>
       ) : (
-        <div className={`grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-3 ${consulta.isFetching ? "opacity-70" : ""}`} style={{ transition: "opacity 200ms" }}>
-          <Card className="p-5">
-            <h2 className="text-[15px] font-bold text-navy">Sobrecarga acumulada</h2>
-            <p className="mt-0.5 text-[13px] text-muted">bici-intervalos de 5 min, menos es mejor</p>
-            <div className="mt-4 flex items-end gap-5">
+        <div
+          className={`grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] ${consulta.isFetching ? "opacity-70" : ""}`}
+          style={{ transition: "opacity 200ms" }}
+        >
+          <section className="rounded-2xl bg-navy p-7 text-white shadow-card">
+            <h2 className="text-[15px] font-bold text-white/85">Sobrecarga acumulada</h2>
+            <p className="text-[13px] text-white/60">bici-intervalos de 5 min, menos es mejor</p>
+
+            <div className="mt-5 flex flex-wrap items-end gap-x-8 gap-y-3">
               <div>
-                <p className="text-[13px] font-semibold text-muted">Sin estrategia</p>
-                <p className="text-4xl font-extrabold text-muted">
+                <p className="text-[13px] font-semibold text-white/60">Sin estrategia</p>
+                <p className="text-6xl font-extrabold text-white/45">
                   <AnimatedNumber value={refSobre} />
                 </p>
               </div>
-              <svg width="26" height="18" viewBox="0 0 26 18" className="mb-2 text-muted" aria-hidden="true">
-                <path d="M1 9h22M16 2l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="38" height="24" viewBox="0 0 38 24" className="mb-4 text-amber" aria-hidden="true">
+                <path d="M2 12h32M24 3l10 9-10 9" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
-                <p className="text-[13px] font-semibold text-navy">Con estrategia</p>
-                <p className="text-5xl font-extrabold text-navy">
+                <p className="text-[13px] font-semibold text-amber">Con estrategia</p>
+                <p className="text-[96px] font-extrabold leading-[0.95]">
                   <AnimatedNumber value={eqSobre} />
                 </p>
               </div>
+              <p className="tnum mb-2 rounded-2xl bg-amber px-4 py-2 text-lg font-extrabold text-navy-deep">
+                {mejora === null ? "No aplica" : `−${mejora.toFixed(1).replace(".", ",")} %`}
+              </p>
             </div>
-            <p className="mt-4 text-sm font-semibold text-navy">
-              {mejora === null ? (
-                "Mejora: no aplica, la referencia ya vale 0."
-              ) : (
-                <>
-                  Baja <span className="tnum rounded-md bg-blue-soft px-1.5 py-0.5 text-blue-deep">{mejora.toFixed(1).replace(".", ",")} %</span>{" "}
-                  frente a la referencia.
-                </>
-              )}
-            </p>
-          </Card>
 
-          <Card className="p-5">
+            <div className="mt-7 border-t border-white/15 pt-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                <h3 className="text-[15px] font-bold">Qué pesa más</h3>
+                <p className="max-w-md text-[13px] text-white/65">
+                  Reducir la congestión puede mover viajes a otro momento o corredor. Ajusta el equilibrio con la puntualidad.
+                </p>
+              </div>
+              <input
+                type="range"
+                className="mt-3 w-full"
+                style={{ accentColor: "#febd04" }}
+                min={0}
+                max={PESOS.length - 1}
+                step={1}
+                value={idxPeso}
+                onChange={(e) => setIdxPeso(Number(e.target.value))}
+                aria-label="Equilibrio entre puntualidad y reducción de congestión"
+                aria-valuetext={idxPeso === PESOS.length - 1 ? "Prioriza reducir la congestión" : `Nivel ${idxPeso + 1} de ${PESOS.length}`}
+              />
+              <div className="mt-1 flex justify-between text-xs font-semibold text-white/65">
+                <span>Más puntualidad</span>
+                <span>Más reducción de congestión</span>
+              </div>
+            </div>
+          </section>
+
+          <Card className="p-6">
             <h2 className="text-[15px] font-bold text-navy">Puntualidad</h2>
             <p className="mt-0.5 text-[13px] text-muted">todos los viajes siguen en la simulación</p>
             <div className="mt-4 space-y-4">
               <BarraEstados titulo="Sin estrategia" m={mRef} reducir={!!reducir} />
               <BarraEstados titulo="Con estrategia" m={mEq} reducir={!!reducir} fuerte />
             </div>
-          </Card>
-
-          <Card className="p-5">
-            <h2 className="text-[15px] font-bold text-navy">Costo en tiempo</h2>
-            <p className="mt-0.5 text-[13px] text-muted">lo que cuesta repartir la demanda</p>
-            <dl className="mt-4 grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 gap-y-3 text-sm">
-              <dt />
+            <dl className="mt-5 grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 gap-y-2.5 border-t border-line pt-4 text-sm">
+              <dt className="text-xs font-bold text-muted">Costo en tiempo</dt>
               <dd className="text-right text-xs font-bold text-muted">Sin</dd>
               <dd className="text-right text-xs font-bold text-navy">Con</dd>
               <dt className="font-semibold text-ink">Minutos de viaje</dt>
@@ -259,6 +250,9 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                     }`}
                   >
                     {f === "TODOS" ? "Todos" : ETIQUETA_ESTADO[f]}
+                    <span className="tnum ml-1.5 opacity-70">
+                      {f === "TODOS" ? filas.length : filas.filter((x) => x.equipo.estado === f).length}
+                    </span>
                   </button>
                 ))}
               </div>

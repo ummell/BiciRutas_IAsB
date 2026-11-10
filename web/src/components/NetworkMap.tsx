@@ -33,6 +33,7 @@ interface Props {
   calorMax?: number;
   onNodo?: (id: string) => void;
   rutaKey?: string;
+  horas?: Record<string, string>;
 }
 
 export function NetworkMap({
@@ -46,6 +47,7 @@ export function NetworkMap({
   calorMax = 0,
   onNodo,
   rutaKey,
+  horas,
 }: Props) {
   const reducir = useReducedMotion();
   const [foco, setFoco] = useState<string | null>(null);
@@ -70,16 +72,16 @@ export function NetworkMap({
       const v = calor[id] ?? 0;
       return { color: colorCalor(v, calorMax), ancho: v > 0 ? 3.5 : 2, dash: undefined as string | undefined };
     }
-    if (bloqueado) return { color: C.bloqueado, ancho: 2.5, dash: "2 5" };
-    if (restringidos.has(id)) return { color: C.restringido, ancho: 2.5, dash: "8 5" };
-    return { color: C.libre, ancho: 2, dash: undefined };
+    if (bloqueado) return { color: C.bloqueado, ancho: 3, dash: "2 5" };
+    if (restringidos.has(id)) return { color: C.restringido, ancho: 3, dash: "8 5" };
+    return { color: C.libre, ancho: 2.5, dash: undefined };
   }
 
   const tramoFoco = foco ? tramos.get(foco) : undefined;
   const restriccionesFoco = foco ? red.restricciones.filter((r) => r.tramo_id === foco) : [];
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-2xl border border-line bg-[#f6f9fd]">
       <svg
         viewBox="0 -40 880 640"
         className="block h-auto w-full"
@@ -147,7 +149,7 @@ export function NetworkMap({
                   x={g.lx}
                   y={g.ly - 5}
                   textAnchor="middle"
-                  fontSize="10.5"
+                  fontSize="11.5"
                   fontWeight={600}
                   fill="#56627a"
                   stroke="#fff"
@@ -236,9 +238,9 @@ export function NetworkMap({
                   {num}
                 </text>
                 <text
-                  y={NODE_R + 17}
+                  y={NODE_R + 18}
                   textAnchor="middle"
-                  fontSize="12.5"
+                  fontSize="13.5"
                   fontWeight={600}
                   fill="#14213d"
                   stroke="#fff"
@@ -252,6 +254,30 @@ export function NetworkMap({
             );
           })}
         </g>
+
+        {horas && (
+          <g pointerEvents="none">
+            {Object.entries(horas).map(([id, hora], i) => {
+              const n = nodos.get(id);
+              if (!n) return null;
+              return (
+                <motion.g
+                  key={`${rutaKey}-${id}`}
+                  initial={reducir ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.28, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <g transform={`translate(${n.x + 14} ${n.y - NODE_R - 24})`}>
+                    <rect width="50" height="21" rx="10.5" fill={C.navy} />
+                    <text x="25" y="14.5" textAnchor="middle" fontSize="12" fontWeight={700} fill="#fff">
+                      {hora}
+                    </text>
+                  </g>
+                </motion.g>
+              );
+            })}
+          </g>
+        )}
       </svg>
 
       <div
