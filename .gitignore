@@ -1,0 +1,10 @@
+# Entorno y secretos
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Datos de la empresa: nunca al repositorio (regla del kit)
+datos/
+escenarios/
