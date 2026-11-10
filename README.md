@@ -23,11 +23,11 @@ Prototipo que debe funcionar en la demo. Incluye:
 
 | Módulo | Descripción | Estado |
 |--------|-------------|--------|
-| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 14 tests pasan |
-| Consulta | Ruta, hora de salida y llegada para un origen, destino y hora límite | Pendiente |
-| Lote | Procesa un escenario completo y mide la ocupación por tramo e intervalo | Pendiente |
-| Estrategia | Reparte rutas y salidas para bajar la sobrecarga total | Pendiente |
-| Resultados | Un JSON por escenario y comparación con la referencia | Pendiente |
+| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 49 tests pasan |
+| Consulta | Ruta, hora de salida y llegada para un origen, destino y hora límite | Hecho |
+| Lote | Procesa un escenario completo y mide la ocupación por tramo e intervalo | Hecho |
+| Estrategia | Reparte rutas y salidas para bajar la sobrecarga total (greedy por costo marginal y mejora local) | Hecho |
+| Resultados | Un JSON por escenario y comparación con la referencia | Hecho |
 | API | FastAPI local que expone consulta, lote y métricas | Pendiente |
 | Web | Aplicación web con plano de la red, mapa de calor y animaciones | Pendiente |
 
@@ -118,7 +118,13 @@ cp .env.example .env                      # BICIRUTAS_PAQUETE apunta a ../gestio
 .venv/bin/python -m pytest                # tests del modelo
 ```
 
-Validar un resultado con el evaluador oficial:
+Generar los 6 resultados, validarlos con el evaluador y armar la comparación:
+
+```bash
+PYTHONPATH=codigo .venv/bin/python -m bicirutas.generar
+```
+
+Validar un resultado suelto con el evaluador oficial:
 
 ```bash
 python ../gestion/herramientas/evaluar.py 02_demanda_concentrada resultados/02_demanda_concentrada.json
@@ -134,9 +140,18 @@ Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpet
 
 ## Comparación con la referencia
 
-| Escenario | Sobrecarga referencia | Sobrecarga equipo | A tiempo | Tarde | Sin ruta segura |
-|-----------|----------------------:|------------------:|---------:|------:|----------------:|
-| 01 a 06 | pendiente | pendiente | | | |
+Generada con `bicirutas.generar` (detalle en `resultados/comparacion.json`). Los 6 JSON pasan `evaluar.py` con código de salida 0.
+
+| Escenario | Sobrecarga referencia | Sobrecarga equipo | Mejora | A tiempo | Tarde | Sin ruta segura |
+|-----------|----------------------:|------------------:|-------:|---------:|------:|----------------:|
+| 01_viaje_normal | 36 | 0 | 100 % | 8 | 0 | 0 |
+| 02_demanda_concentrada | 348 | 143 | 58,9 % | 44 | 16 | 0 |
+| 03_cierre_temporal | 48 | 0 | 100 % | 10 | 0 | 0 |
+| 04_recorrido_nocturno | 6 | 0 | 100 % | 10 | 0 | 0 |
+| 05_destino_sin_acceso | 0 | 0 | no aplica | 0 | 0 | 3 |
+| 06_hora_imposible | 6 | 0 | 100 % | 0 | 3 | 0 |
+
+En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la referencia tiene 0). Es el equilibrio que permite el reto, que prioriza la congestión.
 
 ---
 
@@ -144,6 +159,7 @@ Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpet
 
 - El código del equipo no importa el modelo oficial: se reimplementó para poder explicarlo. Los tests lo contrastan con el oficial en cada tramo y cada minuto de los seis escenarios.
 - La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
+- La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
 - No es una solución óptima global ni un simulador de tráfico real.
 
 ## Equipo y uso de IA

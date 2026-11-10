@@ -1,0 +1,24 @@
+{
+  "escenario_id": "05_destino_sin_acceso",
+  "equipo": "ias software · BiciRutas",
+  "viajes": [
+    {
+      "viaje_id": "V001",
+      "salida": null,
+      "tramos": [],
+      "estado": "SIN_RUTA_SEGURA"
+    },
+    {
+      "viaje_id": "V002",
+      "salida": null,
+      "tramos": [],
+      "estado": "SIN_RUTA_SEGURA"
+    },
+    {
+      "viaje_id": "V003",
+      "salida": null,
+      "tramos": [],
+      "estado": "SIN_RUTA_SEGURA"
+    }
+  ]
+}
