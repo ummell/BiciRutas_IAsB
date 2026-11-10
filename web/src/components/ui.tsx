@@ -1,4 +1,4 @@
-import { animate, useReducedMotion } from "motion/react";
+import { animate, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Estado } from "../lib/api";
 import { aHora, aMin } from "../lib/time";
@@ -90,7 +90,7 @@ export function Card({
   );
 }
 
-export function Campo({ etiqueta, children, id }: { etiqueta: string; children: ReactNode; id: string }) {
+export function Campo({ etiqueta, children, id }: { etiqueta: ReactNode; children: ReactNode; id: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-semibold text-muted">
@@ -102,7 +102,71 @@ export function Campo({ etiqueta, children, id }: { etiqueta: string; children: 
 }
 
 export const CLASE_INPUT =
-  "w-full min-w-0 rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] font-medium text-ink transition-colors hover:border-[#b7c3d6] focus:border-blue";
+  "w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] font-semibold text-ink shadow-[0_1px_0_rgb(2_51_101/0.04)] transition-[border-color,box-shadow] hover:border-[#b7c3d6] focus-visible:border-blue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue/20";
+
+export function Segmentado({
+  id,
+  etiqueta,
+  opciones,
+  valor,
+  alCambiar,
+}: {
+  id: string;
+  etiqueta: string;
+  opciones: { valor: number; texto: string }[];
+  valor: number;
+  alCambiar: (v: number) => void;
+}) {
+  const reducir = useReducedMotion();
+  function mover(delta: number) {
+    const i = opciones.findIndex((o) => o.valor === valor);
+    const siguiente = opciones[(i + delta + opciones.length) % opciones.length];
+    alCambiar(siguiente.valor);
+  }
+  return (
+    <div
+      role="radiogroup"
+      aria-label={etiqueta}
+      className="grid grid-flow-col auto-cols-fr gap-1 rounded-xl bg-ground p-1"
+    >
+      {opciones.map((o) => {
+        const activo = o.valor === valor;
+        return (
+          <button
+            key={o.valor}
+            type="button"
+            role="radio"
+            aria-checked={activo}
+            tabIndex={activo ? 0 : -1}
+            onClick={() => alCambiar(o.valor)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                mover(1);
+              }
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                mover(-1);
+              }
+            }}
+            className={`relative rounded-lg px-2 py-2.5 text-[13px] font-bold transition-colors ${
+              activo ? "text-navy" : "text-muted hover:text-navy"
+            }`}
+          >
+            {activo && (
+              <motion.span
+                layoutId={`segmentado-${id}`}
+                className="absolute inset-0 rounded-lg bg-white shadow-[0_1px_3px_rgb(2_51_101/0.18)]"
+                transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 460, damping: 34 }}
+              />
+            )}
+            <span className="relative">{o.texto}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function SelectorHora({
   id,
