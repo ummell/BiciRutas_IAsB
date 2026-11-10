@@ -48,6 +48,7 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
   - **Usuario** (por defecto): solo la consulta de ruta, sobre el escenario `01_viaje_normal`. No ve escenarios de prueba, lote, comparación con la referencia ni la carga de viajes de muestra.
   - **Administración:** ve todo, incluidos los seis escenarios, el lote y la comparación.
 - **Web con Motion:** trazo animado de la ruta sobre el plano, transiciones entre vistas y contadores de sobrecarga.
+- **Identidad visual:** paleta, tipografía (Bricolage Grotesque + Inter) y reglas del mapa definidas a partir del logo en [`DESIGN.md`](DESIGN.md). El mapa interactivo tiene zoom, capas, modo noche y vista de calle.
 
 ---
 

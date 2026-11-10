@@ -5,8 +5,7 @@ import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
 import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { plural } from "../lib/texto";
-import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
-import { ControlHora } from "../components/ControlHora";
+import { MapaInteractivo } from "../components/MapaInteractivo";
 import { Resultado, type PuntoRuta } from "../components/Resultado";
 import { Campo, Card, CLASE_INPUT, ErrorAviso, Segmentado, SelectorHora } from "../components/ui";
 
@@ -17,7 +16,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
 
   const [origen, setOrigen] = useState("N01");
   const [destino, setDestino] = useState("N05");
-  const [turno, setTurno] = useState<"origen" | "destino">("origen");
   const [salida, setSalida] = useState("17:00");
   const [limite, setLimite] = useState("18:00");
   const [flex, setFlex] = useState(0);
@@ -37,10 +35,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   );
 
   const estadoQ = useEstadoTramos(escenario, hora);
-  const estado = useMemo(
-    () => Object.fromEntries((estadoQ.data?.tramos ?? []).map((t) => [t.tramo_id, t])),
-    [estadoQ.data],
-  );
+
 
   const mutacion = useMutation({
     mutationFn: ({ ampliar }: { ampliar: boolean }) => {
@@ -79,18 +74,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
     setAmpliado(false);
   }
 
-  function clicNodo(id: string) {
-    if (turno === "origen") {
-      setOrigen(id);
-      if (id === destino) setDestino("");
-      setTurno("destino");
-    } else {
-      setDestino(id);
-      if (id === origen) setOrigen("");
-      setTurno("origen");
-    }
-  }
-
   const r = resultado?.recorrido ?? null;
   const nodosRuta = useMemo(() => {
     if (!r) return [];
@@ -106,7 +89,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
     });
     return lista;
   }, [r, red.tramos]);
-  const horas = useMemo(() => Object.fromEntries(nodosRuta.map((p) => [p.id, p.hora])), [nodosRuta]);
 
   const mismoNodo = origen !== "" && origen === destino;
   const incompleto = origen === "" || destino === "";
@@ -194,8 +176,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                 <path d="M3 2l4.5 11 1.6-4.4L13.5 7z" />
               </svg>
               <span>
-                Toca un nodo del plano para elegir{" "}
-                <strong>{turno === "origen" ? "el origen" : "el destino"}</strong>.
+                Toca un punto del mapa y elige <strong>Salir desde aquí</strong> o <strong>Ir hasta aquí</strong>.
               </span>
             </p>
           </fieldset>
@@ -311,29 +292,29 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
           </div>
 
           <div className="p-3">
-            <NetworkMap
+            <MapaInteractivo
+              escenario={escenario}
               red={red}
+              modo="usuario"
+              hora={hora}
+              onHora={setHora}
               origen={origen || undefined}
               destino={destino || undefined}
               ruta={r?.pasos}
               rutaTarde={r?.estado === "TARDE"}
               rutaKey={`${version}`}
-              horas={horas}
-              estado={estado}
-              onNodo={clicNodo}
+              onOrigen={(id) => {
+                setOrigen(id);
+                if (id === destino) setDestino("");
+                setResultado(null);
+              }}
+              onDestino={(id) => {
+                setDestino(id);
+                if (id === origen) setOrigen("");
+                setResultado(null);
+              }}
+              className="h-[min(640px,72vh)] min-h-[460px]"
             />
-          </div>
-
-          <ControlHora
-            red={red}
-            escenario={escenario}
-            hora={hora}
-            alCambiar={setHora}
-            viaje={r ? { salida: r.salida, llegada: r.llegada } : null}
-          />
-
-          <div className="border-t border-line px-5 py-3.5">
-            <LeyendaMapa modo="consulta" />
           </div>
         </Card>
       </div>

@@ -59,20 +59,20 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
               <div className="mt-4 flex items-end gap-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-white/60">Sale</p>
-                  <p className="tnum text-[56px] font-extrabold leading-none">{r.salida}</p>
+                  <p className="font-display tnum text-[56px] font-extrabold leading-none">{r.salida}</p>
                 </div>
-                <svg width="34" height="22" viewBox="0 0 34 22" className="mb-3 text-amber" aria-hidden="true">
+                <svg width="34" height="22" viewBox="0 0 34 22" className="mb-3 text-amber-light" aria-hidden="true">
                   <path d="M2 11h28M22 3l8 8-8 8" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-white/60">Llega</p>
-                  <p className="tnum text-[56px] font-extrabold leading-none">{r.llegada}</p>
+                  <p className="font-display tnum text-[56px] font-extrabold leading-none">{r.llegada}</p>
                 </div>
               </div>
               <p className="tnum mt-3 text-[15px] font-medium text-white/90">
                 {r.duracion_min} min de viaje ·{" "}
                 {r.tardanza_min > 0 ? (
-                  <strong className="text-amber">{r.tardanza_min} min después del límite ({limite})</strong>
+                  <strong className="text-amber-light">{r.tardanza_min} min después del límite ({limite})</strong>
                 ) : (
                   <>{aMin(limite) - aMin(r.llegada)} min antes del límite ({limite})</>
                 )}
@@ -83,7 +83,7 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
             </>
           ) : (
             <div className="mt-4 max-w-md space-y-2">
-              <p className="text-xl font-extrabold leading-snug">No existe una ruta segura para esa ventana de salida.</p>
+              <p className="font-display text-xl font-extrabold leading-snug">No existe una ruta segura para esa ventana de salida.</p>
               <p className="text-sm text-white/75">
                 Todos los recorridos posibles usan algún tramo bloqueado a esa hora. Cambiar la hora solo ayuda si el riesgo
                 deja de estar vigente.
@@ -102,11 +102,11 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <span className="tnum h-5 text-sm font-bold text-amber">{p.hora}</span>
+                <span className="tnum h-5 text-sm font-bold text-amber-light">{p.hora}</span>
                 <div className="relative mt-1.5 flex h-4 items-center">
                   <span
                     className={`relative z-10 size-4 shrink-0 rounded-full border-2 border-navy ${
-                      i === 0 || i === nodosRuta.length - 1 ? "bg-white" : "bg-[#7f9cc0]"
+                      i === 0 || i === nodosRuta.length - 1 ? "bg-white" : "bg-[#9db59f]"
                     }`}
                     aria-hidden="true"
                   />
@@ -121,7 +121,7 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
                     <Fila etiqueta="Tiempo" valor={`${p.sale.min} min`} />
                   </dl>
                 ) : (
-                  <p className="mt-2 pr-3 text-xs font-semibold text-amber">Destino</p>
+                  <p className="mt-2 pr-3 text-xs font-semibold text-amber-light">Destino</p>
                 )}
               </motion.li>
             ))}
@@ -133,7 +133,7 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
         <div className="flex flex-wrap items-center gap-4 border-t border-white/15 bg-navy-deep/60 px-6 py-3.5">
           {ampliado && r && (
             <p className="text-sm font-semibold">
-              Salida sugerida probando otras horas: <span className="tnum text-amber">{r.salida}</span>
+              Salida sugerida probando otras horas: <span className="tnum text-amber-light">{r.salida}</span>
             </p>
           )}
           {ampliado && !r && (
@@ -144,7 +144,7 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
               type="button"
               onClick={onAmpliar}
               disabled={pendiente}
-              className="rounded-xl bg-amber px-5 py-2.5 text-sm font-bold text-navy-deep transition-colors hover:bg-[#ffd04d] disabled:opacity-50"
+              className="rounded-xl bg-amber px-5 py-2.5 text-sm font-bold text-navy-deep transition-colors hover:bg-[#ee9248] disabled:opacity-50"
             >
               {pendiente ? "Probando…" : "Probar otra hora de salida"}
             </button>
