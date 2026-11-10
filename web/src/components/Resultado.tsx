@@ -4,6 +4,28 @@ import { aMin } from "../lib/time";
 import { plural } from "../lib/texto";
 import { EstadoChip } from "./ui";
 
+export interface PuntoRuta {
+  id: string;
+  hora: string;
+  sale?: { tramo: string; min: number };
+}
+
+function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <div className="flex items-baseline gap-1.5 text-xs">
+      <dt className="font-semibold text-white/80">{etiqueta}</dt>
+      <span aria-hidden="true" className="min-w-2 flex-1 border-b border-dashed border-white/30" />
+      <dd className="tnum font-bold text-white">{valor}</dd>
+    </div>
+  );
+}
+
+const PUNTOS = {
+  backgroundImage: "radial-gradient(circle closest-side, rgba(255,255,255,0.55) 90%, transparent)",
+  backgroundSize: "9px 4px",
+  backgroundRepeat: "repeat-x",
+};
+
 interface Props {
   resultado: ConsultaOut;
   red: Red;
@@ -12,7 +34,7 @@ interface Props {
   puedeAmpliar: boolean;
   pendiente: boolean;
   onAmpliar: () => void;
-  nodosRuta: { id: string; hora: string }[];
+  nodosRuta: PuntoRuta[];
 }
 
 export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pendiente, onAmpliar, nodosRuta }: Props) {
@@ -29,7 +51,7 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
       exit={reducir ? undefined : { opacity: 0, y: -8 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="grid gap-x-10 gap-y-6 p-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center">
+      <div className="grid gap-y-6 p-6">
         <div>
           <EstadoChip estado={resultado.estado} grande />
           {r ? (
@@ -71,26 +93,36 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
         </div>
 
         {r && (
-          <ol className="flex min-w-0 overflow-x-auto pb-1" aria-label="Recorrido">
+          <ol className="flex min-w-0 overflow-x-auto border-t border-white/15 pb-1 pt-5" aria-label="Recorrido">
             {nodosRuta.map((p, i) => (
               <motion.li
                 key={`${p.id}-${i}`}
-                className="relative flex min-w-[104px] flex-1 flex-col items-center text-center"
+                className="relative flex min-w-[128px] flex-1 flex-col items-stretch"
                 initial={reducir ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <span className="tnum h-5 text-sm font-bold text-amber">{p.hora}</span>
-                {i < nodosRuta.length - 1 && (
-                  <span className="absolute left-1/2 top-[34px] h-0.5 w-full -translate-y-1/2 bg-white/25" aria-hidden="true" />
+                <div className="relative mt-1.5 flex h-4 items-center">
+                  <span
+                    className={`relative z-10 size-4 shrink-0 rounded-full border-2 border-navy ${
+                      i === 0 || i === nodosRuta.length - 1 ? "bg-white" : "bg-[#7f9cc0]"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  {i < nodosRuta.length - 1 && (
+                    <span className="ml-1 h-1 flex-1" style={PUNTOS} aria-hidden="true" />
+                  )}
+                </div>
+                <span className="mt-2 pr-3 text-[13px] font-semibold leading-tight text-white/95">{nombre(p.id)}</span>
+                {p.sale ? (
+                  <dl className="mt-2 space-y-1 pr-4">
+                    <Fila etiqueta="Tramo" valor={p.sale.tramo} />
+                    <Fila etiqueta="Tiempo" valor={`${p.sale.min} min`} />
+                  </dl>
+                ) : (
+                  <p className="mt-2 pr-3 text-xs font-semibold text-amber">Destino</p>
                 )}
-                <span
-                  className={`relative z-10 mt-1.5 size-4 rounded-full border-2 border-navy ${
-                    i === 0 || i === nodosRuta.length - 1 ? "bg-white" : "bg-[#7f9cc0]"
-                  }`}
-                  aria-hidden="true"
-                />
-                <span className="mt-2 px-1 text-[13px] font-semibold leading-tight text-white/95">{nombre(p.id)}</span>
               </motion.li>
             ))}
           </ol>
