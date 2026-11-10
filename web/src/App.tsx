@@ -3,17 +3,19 @@ import { useState } from "react";
 import { ErrorAviso } from "./components/ui";
 import { ApiError } from "./lib/api";
 import { useEscenarios, useRed } from "./lib/hooks";
+import { useRol, type Rol } from "./lib/rol";
 import { ConsultaView } from "./views/ConsultaView";
 import { LoteView } from "./views/LoteView";
 import { UsuarioView } from "./views/UsuarioView";
 
-type Vista = "usuario" | "consulta" | "lote";
-type Rol = "usuario" | "admin";
+type Vista = "consulta" | "lote";
 
 const ROLES: { id: Rol; nombre: string; rol: string }[] = [
   { id: "usuario", nombre: "Planear mi viaje", rol: "Usuario" },
-  { id: "admin", nombre: "Consulta y lote", rol: "Administrador" },
+  { id: "administracion", nombre: "Consulta y lote", rol: "Administración" },
 ];
+
+const ESCENARIO_USUARIO = "01_viaje_normal";
 
 const PESTANAS_ADMIN: { id: Vista; nombre: string }[] = [
   { id: "consulta", nombre: "Consulta avanzada" },
@@ -23,7 +25,7 @@ const PESTANAS_ADMIN: { id: Vista; nombre: string }[] = [
 function leerHash(): { vista: Vista; escenario: string } {
   const [v, e] = window.location.hash.slice(1).split("/");
   return {
-    vista: v === "lote" || v === "consulta" ? v : "usuario",
+    vista: v === "lote" ? "lote" : "consulta",
     escenario: /^\d{2}_[a-z_]+$/.test(e ?? "") ? e : "01_viaje_normal",
   };
 }
@@ -102,15 +104,13 @@ export default function App() {
     setEscenarioEstado(e);
     window.location.hash = `${vista}/${e}`;
   };
-  const rol: Rol = vista === "usuario" ? "usuario" : "admin";
-  const [ultimaAdmin, setUltimaAdmin] = useState<Vista>(inicial.vista === "lote" ? "lote" : "consulta");
-  const elegirRol = (r: Rol) => setVista(r === "usuario" ? "usuario" : ultimaAdmin);
-  const elegirPestana = (v: Vista) => {
-    setUltimaAdmin(v);
-    setVista(v);
-  };
+  const [rol, setRol] = useRol();
+  const admin = rol === "administracion";
+  const elegirRol = (r: Rol) => setRol(r);
+  const elegirPestana = (v: Vista) => setVista(v);
+  const escenarioActivo = admin ? escenario : ESCENARIO_USUARIO;
   const escenarios = useEscenarios();
-  const red = useRed(escenario);
+  const red = useRed(escenarioActivo);
   const actual = escenarios.data?.find((e) => e.id === escenario);
 
   return (
@@ -147,7 +147,7 @@ export default function App() {
       </header>
 
       <div className="mx-auto flex w-full max-w-[1480px] flex-1 flex-col gap-6 px-5 pb-10 pt-6 lg:px-8">
-        {rol === "admin" && (
+        {admin && (
         <div className="flex flex-col gap-4">
         <div role="tablist" aria-label="Secciones de administración" className="flex w-fit gap-1 rounded-2xl border border-line bg-white p-1 shadow-card">
           {PESTANAS_ADMIN.map((t) => (
@@ -198,15 +198,15 @@ export default function App() {
           )}
           {red.data ? (
             <motion.div
-              key={`${vista}-${escenario}`}
+              key={`${rol}-${vista}-${escenarioActivo}`}
               initial={reducir ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              {vista === "usuario" ? (
-                <UsuarioView escenario={escenario} red={red.data} />
+              {!admin ? (
+                <UsuarioView escenario={escenarioActivo} red={red.data} />
               ) : vista === "consulta" ? (
-                <ConsultaView escenario={escenario} red={red.data} />
+                <ConsultaView escenario={escenario} red={red.data} admin />
               ) : (
                 <LoteView escenario={escenario} red={red.data} />
               )}
