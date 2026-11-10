@@ -61,6 +61,24 @@ def test_lote_compara_equipo_y_referencia():
     assert len(r["equipo"]["asignaciones"]) == 60
 
 
+def test_linea_tiempo_marca_cuando_cambia_la_red():
+    r = cliente.get("/api/escenarios/03_cierre_temporal/linea-tiempo").json()
+    assert r["intervalo_min"] == 5 and len(r["horas"]) == 72
+    por_hora = {h["hora"]: {b["tramo_id"] for b in h["bloqueados"]} for h in r["horas"]}
+    assert "T03" in por_hora["17:00"] and "T03" in por_hora["17:25"]
+    assert "T03" not in por_hora["17:30"]
+    assert {"T27", "T28"} <= por_hora["15:00"]
+
+
+def test_linea_tiempo_coincide_con_estado_tramos():
+    escenario = "04_recorrido_nocturno"
+    r = cliente.get(f"/api/escenarios/{escenario}/linea-tiempo").json()
+    for h in (r["horas"][0], r["horas"][36], r["horas"][-1]):
+        puntual = cliente.get(f"/api/escenarios/{escenario}/estado-tramos", params={"hora": h["hora"]}).json()
+        esperado = {t["tramo_id"] for t in puntual["tramos"] if not t["seguro"]}
+        assert {b["tramo_id"] for b in h["bloqueados"]} == esperado
+
+
 def test_estado_tramos_respeta_el_cierre_y_el_borde():
     def estado(hora):
         r = cliente.get("/api/escenarios/03_cierre_temporal/estado-tramos", params={"hora": hora}).json()

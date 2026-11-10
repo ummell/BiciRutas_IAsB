@@ -122,6 +122,14 @@ export interface EstadoTramo {
   seguro: boolean;
   motivo: string | null;
 }
+export interface TramoBloqueado {
+  tramo_id: string;
+  motivo: string;
+}
+export interface LineaTiempo {
+  intervalo_min: number;
+  horas: { hora: string; bloqueados: TramoBloqueado[] }[];
+}
 export interface EstadoTramos {
   hora: string;
   tramos: EstadoTramo[];
@@ -159,6 +167,7 @@ export const api = {
       body: JSON.stringify(datos),
     }),
   lote: (id: string, peso: number) => pedir<Lote>(`/api/escenarios/${id}/lote?peso=${peso}`),
+  lineaTiempo: (id: string) => pedir<LineaTiempo>(`/api/escenarios/${id}/linea-tiempo`),
   estadoTramos: (id: string, hora: string) =>
     pedir<EstadoTramos>(`/api/escenarios/${id}/estado-tramos?hora=${hora}`),
 };

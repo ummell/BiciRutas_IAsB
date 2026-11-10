@@ -194,6 +194,9 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                 alCambiar={(v) => {
                   setSalida(v);
                   setHora(v);
+                  if (aMin(limite) <= aMin(v)) {
+                    setLimite(aHora(Math.min(aMin(v) + 60, aMin(red.config.fin))));
+                  }
                   setResultado(null);
                 }}
               />
@@ -202,7 +205,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
               <SelectorHora
                 id="limite"
                 valor={limite}
-                desde={aHora(aMin(red.config.inicio) + red.config.intervalo_min)}
+                desde={aHora(aMin(salida) + red.config.intervalo_min)}
                 hasta={red.config.fin}
                 paso={red.config.intervalo_min}
                 alCambiar={(v) => {
