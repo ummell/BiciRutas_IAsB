@@ -1,4 +1,3 @@
-"""Lote: ocupación por tramo e intervalo, sobrecarga y métricas (regla 4)."""
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -10,8 +9,6 @@ from .tiempo import a_hora, a_minutos
 
 @dataclass
 class Asignacion:
-    """Decisión sobre un viaje: un recorrido seguro o None (SIN_RUTA_SEGURA)."""
-
     viaje_id: str
     recorrido: Recorrido | None
 
@@ -21,12 +18,6 @@ class Asignacion:
 
 
 class Ocupacion:
-    """Viajes asignados por (tramo, intervalo de 5 min) y su sobrecarga acumulada.
-
-    La carga inicial y la capacidad vienen del escenario; la sobrecarga de un par es
-    max(0, inicial + asignada - capacidad) y el indicador es la suma de todos los pares.
-    """
-
     def __init__(self, esc: Escenario):
         self.esc = esc
         self.inicio = a_minutos(esc.config["inicio"])
@@ -43,7 +34,6 @@ class Ocupacion:
         )
 
     def pares(self, recorrido: Recorrido):
-        """Pares (tramo, inicio de intervalo) que toca el recorrido, uno por paso e intervalo."""
         for p in recorrido.pasos:
             t = self.inicio + ((p.entrada - self.inicio) // self.dt) * self.dt
             while t < p.salida:
@@ -54,7 +44,6 @@ class Ocupacion:
         return max(0, self.inicial[par] + asignada - self.capacidad[par[0]])
 
     def costo_marginal(self, recorrido: Recorrido) -> int:
-        """Cuánto subiría la sobrecarga total si se agrega el recorrido (sin agregarlo)."""
         return sum(
             self._sobrecarga(par, self.asignada[par] + 1) - self._sobrecarga(par, self.asignada[par])
             for par in self.pares(recorrido)
@@ -73,7 +62,6 @@ class Ocupacion:
             self.asignada[par] -= 1
 
     def detalle(self) -> list:
-        """Una fila por par tramo/intervalo, con el mismo contenido que el evaluador oficial."""
         filas = []
         for (tid, t), inicial in self.inicial.items():
             n = self.asignada[(tid, t)]
@@ -102,7 +90,6 @@ def construir_ocupacion(esc: Escenario, asignaciones: list) -> Ocupacion:
 
 
 def metricas(esc: Escenario, asignaciones: list) -> dict:
-    """Mismos indicadores que el resumen del evaluador oficial."""
     ocupacion = construir_ocupacion(esc, asignaciones)
     filas = ocupacion.detalle()
     con_ruta = [a.recorrido for a in asignaciones if a.recorrido]
@@ -119,12 +106,10 @@ def metricas(esc: Escenario, asignaciones: list) -> dict:
 
 
 def referencia_lote(esc: Escenario) -> list:
-    """Cada viaje por su cuenta, con la menor duración segura (sin repartir demanda)."""
     return [Asignacion(v["id"], mejor_individual(esc, v)) for v in esc.viajes]
 
 
 def a_resultado_json(esc: Escenario, asignaciones: list, equipo: str) -> dict:
-    """Resultado en el formato de entrega del diccionario de datos."""
     filas = []
     for a in asignaciones:
         if a.recorrido is None:

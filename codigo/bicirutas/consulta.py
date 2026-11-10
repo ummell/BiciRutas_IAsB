@@ -1,4 +1,3 @@
-"""Consulta de un viaje: rutas candidatas, salidas permitidas y estado."""
 from dataclasses import dataclass
 
 import networkx as nx
@@ -9,7 +8,6 @@ from .tiempo import a_minutos
 
 
 def rutas_simples(esc: Escenario, origen: str, destino: str) -> list:
-    """Todas las rutas sin ciclos entre dos nodos, como listas de ids de tramo."""
     clave = (origen, destino)
     if clave not in esc.cache_rutas:
         esc.cache_rutas[clave] = [
@@ -20,16 +18,11 @@ def rutas_simples(esc: Escenario, origen: str, destino: str) -> list:
 
 
 def salidas_permitidas(esc: Escenario, viaje: dict) -> range:
-    """Salidas candidatas: grilla de 5 min dentro de la ventana, extremos incluidos."""
     paso = esc.config["intervalo_min"]
     return range(a_minutos(viaje["salida_desde"]), a_minutos(viaje["salida_hasta"]) + 1, paso)
 
 
 def candidatos(esc: Escenario, viaje: dict) -> list[Recorrido]:
-    """Todos los recorridos seguros (ruta y salida) del viaje.
-
-    Orden estable: menor duración, salida más temprana y luego lista de tramos.
-    """
     seguros = []
     for tramos in rutas_simples(esc, viaje["origen"], viaje["destino"]):
         for salida in salidas_permitidas(esc, viaje):
@@ -42,24 +35,18 @@ def candidatos(esc: Escenario, viaje: dict) -> list[Recorrido]:
 
 
 def mejor_individual(esc: Escenario, viaje: dict) -> Recorrido | None:
-    """Menor duración segura sin mirar a los demás viajes (criterio de la referencia)."""
     seguros = candidatos(esc, viaje)
     return seguros[0] if seguros else None
 
 
 @dataclass
 class Consulta:
-    estado: str  # A_TIEMPO | TARDE | SIN_RUTA_SEGURA
+    estado: str
     recorrido: Recorrido | None
-    alternativas: int  # cuántos (ruta, salida) seguros existen
+    alternativas: int
 
 
 def consultar(esc: Escenario, viaje: dict) -> Consulta:
-    """Recomendación para una consulta suelta.
-
-    Si hay opciones a tiempo, la de menor duración. Si todas llegan tarde, la que
-    llega antes. Sin opciones seguras en toda la ventana: SIN_RUTA_SEGURA.
-    """
     seguros = candidatos(esc, viaje)
     if not seguros:
         return Consulta("SIN_RUTA_SEGURA", None, 0)
@@ -78,7 +65,6 @@ def consultar_libre(
     llegada_limite: str,
     salida_hasta: str | None = None,
 ) -> Consulta:
-    """Consulta del formulario: sin `salida_hasta` se sale exactamente a `salida_desde`."""
     viaje = {
         "id": "CONSULTA",
         "origen": origen,
