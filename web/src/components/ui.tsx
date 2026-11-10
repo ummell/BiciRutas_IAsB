@@ -102,7 +102,7 @@ export function Campo({ etiqueta, children, id }: { etiqueta: ReactNode; childre
 }
 
 export const CLASE_INPUT =
-  "w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] font-semibold text-ink shadow-[0_1px_0_rgb(2_51_101/0.04)] transition-[border-color,box-shadow] hover:border-[#b7c3d6] focus-visible:border-blue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue/20";
+  "w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] font-semibold text-ink shadow-[0_1px_0_rgb(25_58_39/0.04)] transition-[border-color,box-shadow] hover:border-[#c9c2b2] focus-visible:border-blue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue/20";
 
 export function Segmentado({
   id,
@@ -156,7 +156,7 @@ export function Segmentado({
             {activo && (
               <motion.span
                 layoutId={`segmentado-${id}`}
-                className="absolute inset-0 rounded-lg bg-white shadow-[0_1px_3px_rgb(2_51_101/0.18)]"
+                className="absolute inset-0 rounded-lg bg-white shadow-[0_1px_3px_rgb(25_58_39/0.18)]"
                 transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 460, damping: 34 }}
               />
             )}

@@ -5,7 +5,7 @@ import { ApiError } from "../lib/api";
 import { useLote } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { ETIQUETA_ESTADO, plural } from "../lib/texto";
-import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
+import { MapaInteractivo } from "../components/MapaInteractivo";
 import { AnimatedNumber, Card, ErrorAviso, EstadoChip } from "../components/ui";
 
 const PESOS = [1, 2, 3, 10, 1000];
@@ -132,7 +132,7 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
             <div className="mt-4 flex items-end gap-5">
               <div>
                 <p className="text-[13px] font-semibold text-muted">Sin estrategia</p>
-                <p className="text-4xl font-extrabold text-muted">
+                <p className="font-display text-4xl font-extrabold text-muted">
                   <AnimatedNumber value={refSobre} />
                 </p>
               </div>
@@ -141,7 +141,7 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
               </svg>
               <div>
                 <p className="text-[13px] font-semibold text-navy">Con estrategia</p>
-                <p className="text-5xl font-extrabold text-navy">
+                <p className="font-display text-5xl font-extrabold text-navy">
                   <AnimatedNumber value={eqSobre} />
                 </p>
               </div>
@@ -228,9 +228,11 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                 ))}
               </div>
             </div>
-            <div className="px-3 pb-1 pt-2">
-              <NetworkMap
+            <div className="p-3">
+              <MapaInteractivo
+                escenario={escenario}
                 red={red}
+                modo="admin"
                 origen={seleccion?.viaje.origen}
                 destino={seleccion?.viaje.destino}
                 ruta={rutaSel?.pasos}
@@ -238,10 +240,8 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                 rutaKey={`${sel}-${lado}`}
                 calor={lado === "equipo" ? calc.calorEq : calc.calorRef}
                 calorMax={calc.max}
+                className="h-[min(600px,70vh)] min-h-[440px]"
               />
-            </div>
-            <div className="border-t border-line px-5 py-3.5">
-              <LeyendaMapa modo="calor" />
             </div>
           </Card>
 
@@ -399,7 +399,7 @@ function Serie({
     <div className="px-5 pt-2">
       <div className="mb-1 flex flex-wrap gap-x-5 gap-y-1 text-[13px] font-medium text-muted">
         <span className="inline-flex items-center gap-2">
-          <span className="inline-block h-3 w-3 rounded-sm bg-[#f4a3bb]" aria-hidden="true" /> Sin estrategia
+          <span className="inline-block h-3 w-3 rounded-sm bg-[#dca79e]" aria-hidden="true" /> Sin estrategia
         </span>
         <span className="inline-flex items-center gap-2">
           <span className="inline-block h-3 w-3 rounded-sm bg-navy" aria-hidden="true" /> Con estrategia
@@ -409,8 +409,8 @@ function Serie({
       <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="Sobrecarga por intervalo de 5 minutos, con y sin estrategia">
         {[0, 0.5, 1].map((f) => (
           <g key={f}>
-            <line x1={margen.izq} x2={W - margen.der} y1={y(max * f)} y2={y(max * f)} stroke="#e6ecf4" />
-            <text x={margen.izq - 6} y={y(max * f) + 4} textAnchor="end" fontSize="11" fontWeight={600} fill="#56627a">
+            <line x1={margen.izq} x2={W - margen.der} y1={y(max * f)} y2={y(max * f)} stroke="#ece7dc" />
+            <text x={margen.izq - 6} y={y(max * f) + 4} textAnchor="end" fontSize="11" fontWeight={600} fill="#566259">
               {Math.round(max * f)}
             </text>
           </g>
@@ -420,7 +420,7 @@ function Serie({
             key={`r${i}`}
             x={margen.izq + i * paso + 0.5}
             width={Math.max(1, paso - 1)}
-            fill="#f4a3bb"
+            fill="#dca79e"
             initial={reducir ? false : { y: y(0), height: 0 }}
             animate={{ y: y(v), height: y(0) - y(v) }}
             transition={{ duration: 0.6, delay: reducir ? 0 : i * 0.004, ease: [0.16, 1, 0.3, 1] }}
@@ -431,7 +431,7 @@ function Serie({
             key={`e${i}`}
             x={margen.izq + i * paso + paso * 0.2}
             width={Math.max(1, paso * 0.6)}
-            fill="#023365"
+            fill="#193a27"
             initial={reducir ? false : { y: y(0), height: 0 }}
             animate={{ y: y(v), height: y(0) - y(v) }}
             transition={{ duration: 0.6, delay: reducir ? 0 : 0.15 + i * 0.004, ease: [0.16, 1, 0.3, 1] }}
@@ -447,7 +447,7 @@ function Serie({
               textAnchor={x > W - 30 ? "end" : "middle"}
               fontSize="11"
               fontWeight={600}
-              fill="#56627a"
+              fill="#566259"
             >
               {aHora(m)}
             </text>
