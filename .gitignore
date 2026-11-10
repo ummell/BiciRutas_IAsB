@@ -7,3 +7,4 @@ datos/
 escenarios/
 node_modules/
 dist/
+.DS_Store
