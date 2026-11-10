@@ -23,12 +23,12 @@ Prototipo que debe funcionar en la demo. Incluye:
 
 | Módulo | Descripción | Estado |
 |--------|-------------|--------|
-| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 49 tests pasan |
+| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 60 tests pasan |
 | Consulta | Ruta, hora de salida y llegada para un origen, destino y hora límite | Hecho |
 | Lote | Procesa un escenario completo y mide la ocupación por tramo e intervalo | Hecho |
 | Estrategia | Reparte rutas y salidas para bajar la sobrecarga total (greedy por costo marginal y mejora local) | Hecho |
 | Resultados | Un JSON por escenario y comparación con la referencia | Hecho |
-| API | FastAPI local que expone consulta, lote y métricas | Pendiente |
+| API | FastAPI local que expone consulta, lote y métricas | Hecho |
 | Web | Aplicación web con plano de la red, mapa de calor y animaciones | Pendiente |
 
 No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
@@ -118,6 +118,20 @@ cp .env.example .env                      # BICIRUTAS_PAQUETE apunta a ../gestio
 .venv/bin/python -m pytest                # tests del modelo
 ```
 
+Levantar la API (puerto 8000, CORS abierto para el frontend en `localhost:5173`):
+
+```bash
+PYTHONPATH=codigo:. .venv/bin/python -m uvicorn api.main:app --port 8000
+```
+
+| Método | Ruta | Para qué |
+|--------|------|----------|
+| GET | `/api/escenarios` | Índice de escenarios |
+| GET | `/api/escenarios/{id}/red` | Nodos, tramos, restricciones y viajes |
+| POST | `/api/escenarios/{id}/consulta` | Ruta, salida y llegada de un viaje suelto |
+| GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor |
+| GET | `/api/escenarios/{id}/estado-tramos?hora=` | Qué tramos se pueden usar a esa hora y por qué no |
+
 Generar los 6 resultados, validarlos con el evaluador y armar la comparación:
 
 ```bash
@@ -162,9 +176,6 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 - La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
 - No es una solución óptima global ni un simulador de tráfico real.
 
-## Equipo y uso de IA
-
-Pendiente de completar: tareas por integrante, y para la IA, herramienta, finalidad, partes revisadas y comprobaciones.
 
 ---
 

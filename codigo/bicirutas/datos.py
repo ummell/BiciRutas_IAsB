@@ -19,6 +19,7 @@ class Escenario:
     restricciones: dict  # id de tramo -> lista de restricciones
     viajes: list
     grafo: nx.MultiDiGraph
+    nodos: list  # filas de nodos.json (id, nombre, x, y)
     # Rutas simples ya enumeradas por (origen, destino); se llena en consulta.py
     cache_rutas: dict = field(default_factory=dict)
 
@@ -67,4 +68,10 @@ def cargar_escenario(escenario_id: str, paquete: Path | None = None) -> Escenari
         restricciones=restricciones,
         viajes=_leer(carpeta / "viajes.json"),
         grafo=construir_grafo(nodos, tramos),
+        nodos=nodos,
     )
+
+
+def listar_escenarios(paquete: Path | None = None) -> list:
+    """Índice de escenarios del paquete (id, nombre, objetivo, cantidad de viajes)."""
+    return _leer((paquete or carpeta_paquete()) / "escenarios" / "indice.json")
