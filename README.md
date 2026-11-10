@@ -136,6 +136,7 @@ PYTHONPATH=codigo:. .venv/bin/python -m uvicorn api.main:app --port 8000
 | POST | `/api/escenarios/{id}/consulta` | Ruta, salida y llegada de un viaje suelto |
 | GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor |
 | GET | `/api/escenarios/{id}/estado-tramos?hora=` | Qué tramos se pueden usar a esa hora y por qué no |
+| GET | `/api/escenarios/{id}/linea-tiempo` | Tramos bloqueados en cada intervalo de 5 minutos, para ubicar los cambios del día |
 
 Generar los 6 resultados, validarlos con el evaluador y armar la comparación:
 
