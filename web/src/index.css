@@ -1,0 +1,89 @@
+@import "tailwindcss";
+@import "@fontsource-variable/montserrat";
+
+@theme {
+  --font-sans: "Montserrat Variable", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+
+  --color-navy: #023365;
+  --color-navy-deep: #011f3d;
+  --color-navy-soft: #083e76;
+  --color-blue: #0997e6;
+  --color-blue-deep: #0c6fab;
+  --color-blue-soft: #e8f5fd;
+  --color-amber: #febd04;
+  --color-amber-deep: #7a5800;
+  --color-amber-soft: #fff6d6;
+  --color-rose: #fb2f70;
+  --color-rose-deep: #d61f5f;
+  --color-rose-soft: #ffe8ef;
+  --color-ground: #f3f6fa;
+  --color-ink: #14213d;
+  --color-muted: #56627a;
+  --color-line: #dde4ee;
+  --color-edge: #8b98ad;
+
+  --shadow-card: 0 1px 2px rgb(2 51 101 / 0.06), 0 8px 24px -12px rgb(2 51 101 / 0.18);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    min-height: 100vh;
+  }
+  ::selection {
+    background: var(--color-blue);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-blue);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #b7c3d6 transparent;
+  }
+  input[type="range"] {
+    accent-color: var(--color-navy);
+  }
+  input,
+  select,
+  button {
+    font: inherit;
+  }
+  select,
+  input[type="time"] {
+    caret-color: var(--color-blue);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e6ecf4 25%, #f3f6fa 50%, #e6ecf4 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
