@@ -133,6 +133,29 @@ def lote(escenario_id: str, peso: int = Query(PESO_CONGESTION, ge=1, le=100000))
     return _lote(escenario_id, peso)
 
 
+@lru_cache(maxsize=16)
+def _linea_tiempo(escenario_id: str):
+    esc = _escenario(escenario_id)
+    inicio = a_minutos(esc.config["inicio"])
+    fin = a_minutos(esc.config["fin"])
+    paso = esc.config["intervalo_min"]
+    horas = []
+    for minuto in range(inicio, fin, paso):
+        bloqueados = []
+        for tid in esc.tramos:
+            try:
+                pasar_tramo(esc, tid, minuto)
+            except RutaInvalida as exc:
+                bloqueados.append(dict(tramo_id=tid, motivo=str(exc)))
+        horas.append(dict(hora=a_hora(minuto), bloqueados=bloqueados))
+    return dict(intervalo_min=paso, horas=horas)
+
+
+@app.get("/api/escenarios/{escenario_id}/linea-tiempo")
+def linea_tiempo(escenario_id: str):
+    return _linea_tiempo(escenario_id)
+
+
 @app.get("/api/escenarios/{escenario_id}/estado-tramos")
 def estado_tramos(escenario_id: str, hora: str = Query(pattern=HORA)):
     esc = _escenario(escenario_id)
