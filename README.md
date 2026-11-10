@@ -1,0 +1,158 @@
+<div align="center">
+  <h1>BiciRutas</h1>
+  <p><strong>Rutas seguras en bicicleta y reparto de viajes con grafos</strong></p>
+  <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/NetworkX-4B8BBE?style=for-the-badge&logo=python&logoColor=white" alt="NetworkX" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Motion-FF0088?style=for-the-badge&logo=framer&logoColor=white" alt="Motion" />
+</div>
+
+<br />
+
+> **BiciRutas** recomienda rutas seguras en bicicleta sobre un grafo dirigido, sugiere a qué hora salir y reparte un lote de viajes para reducir la congestión del conjunto, en lugar de mandar a todos por el mismo corredor rápido. Avisa qué viajes llegarán tarde y cuáles no tienen ruta segura, y compara el resultado contra una referencia sin estrategia.
+
+> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa viven en `gestion/`, fuera de este repositorio.
+
+---
+
+## Alcance de este repositorio
+
+Prototipo que debe funcionar en la demo. Incluye:
+
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 14 tests pasan |
+| Consulta | Ruta, hora de salida y llegada para un origen, destino y hora límite | Pendiente |
+| Lote | Procesa un escenario completo y mide la ocupación por tramo e intervalo | Pendiente |
+| Estrategia | Reparte rutas y salidas para bajar la sobrecarga total | Pendiente |
+| Resultados | Un JSON por escenario y comparación con la referencia | Pendiente |
+| API | FastAPI local que expone consulta, lote y métricas | Pendiente |
+| Web | Aplicación web con plano de la red, mapa de calor y animaciones | Pendiente |
+
+No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
+
+---
+
+## Características
+
+- **Consulta de ruta:** origen, destino y hora límite devuelven recorrido, salida y llegada.
+- **Seguridad no negociable:** una ruta con un tramo excluido es inválida. Se excluye por cierre, riesgo vial, tramo no habilitado o noche sin iluminación (18:00 a 21:00).
+- **Reparto de viajes:** elige rutas y salidas considerando la carga que generan las otras recomendaciones.
+- **Estados claros:** `A_TIEMPO`, `TARDE` o `SIN_RUTA_SEGURA`. Los viajes tardíos siguen en la simulación y se muestran.
+- **Comparación:** sobrecarga acumulada, pares saturados, minutos de viaje y tardanza, frente a la referencia.
+- **Extra:** probar otra hora de salida dentro de la ventana cuando no hay ruta segura.
+- **Web con Motion:** trazo animado de la ruta sobre el plano, transiciones entre vistas y contadores de sobrecarga.
+
+---
+
+## Reglas del modelo
+
+Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULACION.md`):
+
+| Regla | Definición |
+|-------|------------|
+| Intervalos | `[inicio, fin)`: un cierre que termina a las 17:30 permite entrar exactamente a las 17:30 |
+| Duración de un tramo | `ceil(tiempo_base × factor_vehicular × (1 + 0.25 × carga_inicial / capacidad))`, con la condición vigente al entrar |
+| Congestión | 72 intervalos de 5 min. Por tramo e intervalo: `sobrecarga = max(0, carga_inicial + asignada − capacidad)` |
+| Indicador principal | Suma de todas las sobrecargas, en bici-intervalos. Menos es mejor |
+| Prioridad | La congestión pesa más que la hora límite, sin romper la seguridad ni descartar viajes con ruta segura |
+| `SIN_RUTA_SEGURA` | Solo si ninguna salida permitida tiene un recorrido seguro |
+
+---
+
+## Stack
+
+- **Motor:** Python 3.12, NetworkX (`MultiDiGraph`, clave = id de tramo)
+- **Pruebas:** pytest, con contraste contra el modelo oficial del paquete
+- **API:** FastAPI (por crear)
+- **Frontend:** React, Vite y TypeScript (por crear)
+- **Animación:** Motion
+- **Entorno:** uv, versiones fijadas en `requirements.txt`
+
+---
+
+## Estructura del proyecto
+
+```text
+Paquete_Junior_BiciRutas/
+├── gestion/                    # Material de la empresa (datos, escenarios, reglas). Fuera del repo
+└── mi-equipo/                  # Este repositorio
+    ├── codigo/bicirutas/
+    │   ├── datos.py            # Carga de JSON y construcción del grafo
+    │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
+    │   └── tiempo.py           # Horas en minutos y solapamiento de intervalos
+    ├── api/                    # FastAPI (por crear)
+    ├── web/                    # React + Vite + Motion (por crear)
+    ├── tests/                  # pytest
+    ├── resultados/             # Un JSON por escenario
+    ├── requirements.txt
+    ├── .env.example
+    └── README.md
+```
+
+---
+
+## Escenarios
+
+| Escenario | Qué debe observarse |
+|-----------|---------------------|
+| `01_viaje_normal` | Recorrido seguro; el ejemplo manual llega a las 17:12 |
+| `02_demanda_concentrada` | 60 viajes; repartir rutas u horarios baja la sobrecarga frente a la referencia |
+| `03_cierre_temporal` | T03 cerrado en [17:00, 17:30): otro corredor o salir después |
+| `04_recorrido_nocturno` | T02 sin luz no se usa en [18:00, 21:00) |
+| `05_destino_sin_acceso` | Los 3 viajes son `SIN_RUTA_SEGURA` |
+| `06_hora_imposible` | Hay rutas seguras y los 3 viajes son `TARDE` |
+
+---
+
+## Desarrollo
+
+Requiere **Python 3.10+** (se usa 3.12) y **uv**.
+
+```bash
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python -r requirements.txt
+cp .env.example .env                      # BICIRUTAS_PAQUETE apunta a ../gestion
+.venv/bin/python -m pytest                # tests del modelo
+```
+
+Validar un resultado con el evaluador oficial:
+
+```bash
+python ../gestion/herramientas/evaluar.py 02_demanda_concentrada resultados/02_demanda_concentrada.json
+```
+
+Código de salida 0 significa formato y recorridos aceptados, no que la estrategia sea óptima. Los comandos de API y web se documentarán cuando existan.
+
+### Variables de entorno
+
+Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `../gestion`. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
+
+---
+
+## Comparación con la referencia
+
+| Escenario | Sobrecarga referencia | Sobrecarga equipo | A tiempo | Tarde | Sin ruta segura |
+|-----------|----------------------:|------------------:|---------:|------:|----------------:|
+| 01 a 06 | pendiente | pendiente | | | |
+
+---
+
+## Decisiones y limitaciones
+
+- El código del equipo no importa el modelo oficial: se reimplementó para poder explicarlo. Los tests lo contrastan con el oficial en cada tramo y cada minuto de los seis escenarios.
+- La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
+- No es una solución óptima global ni un simulador de tráfico real.
+
+## Equipo y uso de IA
+
+Pendiente de completar: tareas por integrante, y para la IA, herramienta, finalidad, partes revisadas y comprobaciones.
+
+---
+
+<div align="center">
+  <br>
+  <p>Construido en el Hackathon FQSD con ias software.</p>
+</div>
