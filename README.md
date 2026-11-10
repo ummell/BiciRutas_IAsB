@@ -160,6 +160,16 @@ pnpm --dir web build        # comprobación de tipos y build de producción
 
 Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `http://localhost:5173/#lote/02_demanda_concentrada`.
 
+### Ejecutar con Docker
+
+Con Docker Engine y el complemento Docker Compose instalados, inicia la aplicación completa desde la raíz del repositorio:
+
+```bash
+docker compose up --build
+```
+
+Abre `http://localhost:8080`. Compose levanta la API Python y el frontend React; Nginx sirve la aplicación y reenvía las solicitudes `/api` a la API. Para detenerla, ejecuta `docker compose down`.
+
 ### Variables de entorno
 
 Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, dentro del repositorio. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
