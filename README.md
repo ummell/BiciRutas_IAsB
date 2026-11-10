@@ -13,7 +13,7 @@
 
 > **BiciRutas** recomienda rutas seguras en bicicleta sobre un grafo dirigido, sugiere a qué hora salir y reparte un lote de viajes para reducir la congestión del conjunto, en lugar de mandar a todos por el mismo corredor rápido. Avisa qué viajes llegarán tarde y cuáles no tienen ruta segura, y compara el resultado contra una referencia sin estrategia.
 
-> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa viven en `gestion/`, fuera de este repositorio.
+> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa viven en `gestion/`, dentro de este repositorio.
 
 ---
 
@@ -77,9 +77,8 @@ Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULA
 ## Estructura del proyecto
 
 ```text
-Paquete_Junior_BiciRutas/
-├── gestion/                    # Material de la empresa (datos, escenarios, reglas). Fuera del repo
-└── mi-equipo/                  # Este repositorio
+BiciRutas_IAsB/
+    ├── gestion/                # Material de la empresa (datos, escenarios, reglas, evaluador)
     ├── codigo/bicirutas/
     │   ├── datos.py            # Carga de JSON y construcción del grafo
     │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
@@ -115,7 +114,7 @@ Requiere **Python 3.10+** (se usa 3.12) y **uv**.
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
-cp .env.example .env                      # BICIRUTAS_PAQUETE apunta a ../gestion
+cp .env.example .env                      # BICIRUTAS_PAQUETE apunta a gestion
 .venv/bin/python -m pytest                # tests del modelo
 ```
 
@@ -142,7 +141,7 @@ PYTHONPATH=codigo .venv/bin/python -m bicirutas.generar
 Validar un resultado suelto con el evaluador oficial:
 
 ```bash
-python ../gestion/herramientas/evaluar.py 02_demanda_concentrada resultados/02_demanda_concentrada.json
+python gestion/herramientas/evaluar.py 02_demanda_concentrada resultados/02_demanda_concentrada.json
 ```
 
 Código de salida 0 significa formato y recorridos aceptados, no que la estrategia sea óptima.
@@ -159,7 +158,7 @@ Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `htt
 
 ### Variables de entorno
 
-Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `../gestion`. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
+Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, dentro del repositorio. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
 
 ---
 

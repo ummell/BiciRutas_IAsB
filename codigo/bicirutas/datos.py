@@ -23,7 +23,7 @@ class Escenario:
 
 
 def carpeta_paquete() -> Path:
-    return Path(os.environ.get("BICIRUTAS_PAQUETE", "../gestion")).resolve()
+    return Path(os.environ.get("BICIRUTAS_PAQUETE", "gestion")).resolve()
 
 
 def _leer(ruta: Path):
