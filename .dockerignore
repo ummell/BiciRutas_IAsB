@@ -1,0 +1,12 @@
+.git
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+.env
+node_modules
+web/node_modules
+web/dist
+web/tsconfig.tsbuildinfo
+resultados
+test images
