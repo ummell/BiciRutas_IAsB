@@ -30,8 +30,9 @@ Prototipo que debe funcionar en la demo. Incluye:
 | Resultados | Un JSON por escenario y comparación con la referencia | Hecho |
 | API | FastAPI local que expone consulta, lote y métricas | Hecho |
 | Web | Aplicación web con plano de la red, control de hora, comparación de lote y animaciones | Hecho |
+| Roles | Selector Usuario / Administración en la interfaz (solo visual, sin contraseña) | Hecho |
 
-No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
+No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
 
 ---
 
@@ -43,6 +44,9 @@ No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue p�
 - **Estados claros:** `A_TIEMPO`, `TARDE` o `SIN_RUTA_SEGURA`. Los viajes tardíos siguen en la simulación y se muestran.
 - **Comparación:** sobrecarga acumulada, pares saturados, minutos de viaje y tardanza, frente a la referencia.
 - **Extra:** probar otra hora de salida dentro de la ventana cuando no hay ruta segura.
+- **Roles:** el selector del encabezado alterna entre Usuario y Administración. El rol se recuerda en el navegador (`localStorage`).
+  - **Usuario** (por defecto): solo la consulta de ruta, sobre el escenario `01_viaje_normal`. No ve escenarios de prueba, lote, comparación con la referencia ni la carga de viajes de muestra.
+  - **Administración:** ve todo, incluidos los seis escenarios, el lote y la comparación.
 - **Web con Motion:** trazo animado de la ruta sobre el plano, transiciones entre vistas y contadores de sobrecarga.
 
 ---
@@ -184,6 +188,7 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 - El código del equipo no importa el modelo oficial: se reimplementó para poder explicarlo. Los tests lo contrastan con el oficial en cada tramo y cada minuto de los seis escenarios.
 - La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
 - La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
+- Los roles solo cambian lo que muestra la interfaz. No hay contraseña y la API sigue abierta, así que cualquiera puede cambiarse a Administración. Proteger de verdad exigiría una clave en `.env` y respuestas 403 en la API.
 - No es una solución óptima global ni un simulador de tráfico real.
 
 ## Equipo y tareas

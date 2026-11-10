@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ErrorAviso } from "./components/ui";
 import { ApiError } from "./lib/api";
 import { useEscenarios, useRed } from "./lib/hooks";
+import { useRol, type Rol } from "./lib/rol";
 import { ConsultaView } from "./views/ConsultaView";
 import { LoteView } from "./views/LoteView";
 
@@ -38,6 +39,13 @@ function Marca() {
   );
 }
 
+const ROLES: { id: Rol; nombre: string }[] = [
+  { id: "usuario", nombre: "Usuario" },
+  { id: "administracion", nombre: "Administración" },
+];
+
+const ESCENARIO_USUARIO = "01_viaje_normal";
+
 function Trama() {
   return (
     <svg
@@ -64,9 +72,14 @@ function Trama() {
 
 export default function App() {
   const reducir = useReducedMotion();
+  const [rol, setRol] = useRol();
+  const admin = rol === "administracion";
   const inicial = leerHash();
-  const [vista, setVistaEstado] = useState<Vista>(inicial.vista);
-  const [escenario, setEscenarioEstado] = useState(inicial.escenario);
+  const [vistaEstado, setVistaEstado] = useState<Vista>(inicial.vista);
+  const [escenarioEstado, setEscenarioEstado] = useState(inicial.escenario);
+  const vista: Vista = admin ? vistaEstado : "consulta";
+  const escenario = admin ? escenarioEstado : ESCENARIO_USUARIO;
+  const vistasVisibles = admin ? VISTAS : VISTAS.filter((v) => v.id === "consulta");
   const setVista = (v: Vista) => {
     setVistaEstado(v);
     window.location.hash = `${v}/${escenario}`;
@@ -85,8 +98,10 @@ export default function App() {
         <Trama />
         <div className="relative mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <Marca />
+          <div className="flex flex-wrap items-center gap-3">
+          {admin && (
           <nav aria-label="Vistas" className="flex rounded-2xl bg-white/10 p-1 backdrop-blur-sm">
-            {VISTAS.map((v) => (
+            {vistasVisibles.map((v) => (
               <button
                 key={v.id}
                 onClick={() => setVista(v.id)}
@@ -106,10 +121,27 @@ export default function App() {
               </button>
             ))}
           </nav>
+          )}
+          <div role="group" aria-label="Rol" className="flex rounded-2xl bg-white/10 p-1">
+            {ROLES.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setRol(r.id)}
+                aria-pressed={rol === r.id}
+                className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
+                  rol === r.id ? "bg-white text-navy" : "text-white/80 hover:text-white"
+                }`}
+              >
+                {r.nombre}
+              </button>
+            ))}
+          </div>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto flex w-full max-w-[1480px] flex-1 flex-col gap-6 px-5 pb-10 pt-6 lg:px-8">
+        {admin && (
         <section aria-label="Escenario" className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {(escenarios.data ?? []).map((e) => (
@@ -130,6 +162,7 @@ export default function App() {
           </div>
           {actual && <p className="max-w-3xl text-sm text-muted">{actual.objetivo}</p>}
         </section>
+        )}
 
         <main className="flex-1">
           {escenarios.isError && (
@@ -148,7 +181,7 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
               {vista === "consulta" ? (
-                <ConsultaView escenario={escenario} red={red.data} />
+                <ConsultaView escenario={escenario} red={red.data} admin={admin} />
               ) : (
                 <LoteView escenario={escenario} red={red.data} />
               )}
