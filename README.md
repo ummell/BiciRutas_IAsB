@@ -29,7 +29,7 @@ Prototipo que debe funcionar en la demo. Incluye:
 | Estrategia | Reparte rutas y salidas para bajar la sobrecarga total (greedy por costo marginal y mejora local) | Hecho |
 | Resultados | Un JSON por escenario y comparación con la referencia | Hecho |
 | API | FastAPI local que expone consulta, lote y métricas | Hecho |
-| Web | Aplicación web con plano de la red, mapa de calor y animaciones | Pendiente |
+| Web | Aplicación web con plano de la red, control de hora, comparación de lote y animaciones | Primer corte hecho |
 
 No incluye autenticación, GPS, pagos, préstamos de bicicletas ni despliegue público. El jurado ejecuta el prototipo en local.
 
@@ -66,9 +66,10 @@ Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULA
 
 - **Motor:** Python 3.12, NetworkX (`MultiDiGraph`, clave = id de tramo)
 - **Pruebas:** pytest, con contraste contra el modelo oficial del paquete
-- **API:** FastAPI (por crear)
-- **Frontend:** React, Vite y TypeScript (por crear)
-- **Animación:** Motion
+- **API:** FastAPI
+- **Frontend:** React 19, Vite, TypeScript y Tailwind v4, con la paleta de ias software y Montserrat
+- **Datos del servidor:** TanStack Query
+- **Animación:** Motion (trazo de la ruta, transiciones de vista, contadores y gráficos)
 - **Entorno:** uv, versiones fijadas en `requirements.txt`
 
 ---
@@ -83,8 +84,8 @@ Paquete_Junior_BiciRutas/
     │   ├── datos.py            # Carga de JSON y construcción del grafo
     │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
     │   └── tiempo.py           # Horas en minutos y solapamiento de intervalos
-    ├── api/                    # FastAPI (por crear)
-    ├── web/                    # React + Vite + Motion (por crear)
+    ├── api/                    # FastAPI
+    ├── web/                    # React + Vite + Motion
     ├── tests/                  # pytest
     ├── resultados/             # Un JSON por escenario
     ├── requirements.txt
@@ -144,7 +145,17 @@ Validar un resultado suelto con el evaluador oficial:
 python ../gestion/herramientas/evaluar.py 02_demanda_concentrada resultados/02_demanda_concentrada.json
 ```
 
-Código de salida 0 significa formato y recorridos aceptados, no que la estrategia sea óptima. Los comandos de API y web se documentarán cuando existan.
+Código de salida 0 significa formato y recorridos aceptados, no que la estrategia sea óptima.
+
+Levantar la aplicación web (requiere Node.js y pnpm, y la API corriendo en el puerto 8000):
+
+```bash
+pnpm --dir web install
+pnpm --dir web dev          # http://localhost:5173, reenvía /api a la API local
+pnpm --dir web build        # comprobación de tipos y build de producción
+```
+
+Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `http://localhost:5173/#lote/02_demanda_concentrada`.
 
 ### Variables de entorno
 
