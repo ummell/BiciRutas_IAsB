@@ -252,17 +252,6 @@ Lo que ias software describió para su proyecto Bike y en qué estado queda en e
   - 60 tests automáticos, incluido el contraste de cada tramo y cada minuto contra el modelo oficial del paquete en los seis escenarios.
   - Los seis resultados pasan `evaluar.py` con código de salida 0.
   - Las cifras de la referencia coinciden con `ejemplos/resumen_referencia.json`.
-- **Quién explica cada parte:**
-
-  | Parte | Responsable de explicarla |
-  |-------|---------------------------|
-  | Cálculo de tiempos, regla de seguridad, grafo y estrategia de reparto | Samuel |
-  | Interfaz web, plano de la red y animaciones | Melissa |
-  | Consulta de ruta y lote en la API | Michael |
-  | Pruebas, contraste con el evaluador oficial y resultados | Lina |
-  | Propuesta de valor, experiencia de usuario y cierre del pitch | Juliana |
-
-  Todo el equipo debe poder responder, aunque no sea su parte, qué es la sobrecarga, desde qué hora es de noche y por qué hay viajes tardíos.
 
 
 ---
