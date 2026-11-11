@@ -193,3 +193,17 @@
     animation: none;
   }
 }
+
+@keyframes flujo-via {
+  to {
+    stroke-dashoffset: calc(var(--periodo) * -1);
+  }
+}
+.flujo-via {
+  animation: flujo-via var(--dur, 1.4s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flujo-via {
+    animation: none;
+  }
+}

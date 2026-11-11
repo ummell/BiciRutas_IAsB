@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import type { ConsultaOut, Red } from "../lib/api";
 import { aMin } from "../lib/time";
-import { plural } from "../lib/texto";
+import { plural, textoAlternativas, textoSinRuta } from "../lib/texto";
 import { EstadoChip } from "./ui";
 
 export interface PuntoRuta {
@@ -35,9 +35,20 @@ interface Props {
   pendiente: boolean;
   onAmpliar: () => void;
   nodosRuta: PuntoRuta[];
+  enLote?: boolean;
 }
 
-export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pendiente, onAmpliar, nodosRuta }: Props) {
+export function Resultado({
+  resultado,
+  red,
+  limite,
+  ampliado,
+  puedeAmpliar,
+  pendiente,
+  onAmpliar,
+  nodosRuta,
+  enLote = false,
+}: Props) {
   const reducir = useReducedMotion();
   const r = resultado.recorrido;
   const nombre = (id: string) => red.nodos.find((n) => n.id === id)?.nombre ?? id;
@@ -78,15 +89,18 @@ export function Resultado({ resultado, red, limite, ampliado, puedeAmpliar, pend
                 )}
               </p>
               <p className="mt-1 text-[13px] text-white/65">
-                {plural(resultado.alternativas, "opción segura evaluada", "opciones seguras evaluadas")}
+                {enLote
+                  ? "Ruta asignada en el reparto del lote, junto con los demás viajes del escenario."
+                  : resultado.rutas_seguras != null && resultado.salidas_evaluadas != null
+                  ? textoAlternativas(resultado.rutas_seguras, resultado.salidas_evaluadas)
+                  : plural(resultado.alternativas, "opción segura evaluada", "opciones seguras evaluadas")}
               </p>
             </>
           ) : (
             <div className="mt-4 max-w-md space-y-2">
               <p className="font-display text-xl font-extrabold leading-snug">No existe una ruta segura para esa ventana de salida.</p>
               <p className="text-sm text-white/75">
-                Todos los recorridos posibles usan algún tramo bloqueado a esa hora. Cambiar la hora solo ayuda si el riesgo
-                deja de estar vigente.
+                {textoSinRuta(resultado.motivo_sin_ruta, red.config.fin)}
               </p>
             </div>
           )}

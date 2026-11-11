@@ -18,7 +18,7 @@ Prototipo que recomienda rutas seguras en bicicleta sobre una red ficticia, sugi
 La seguridad depende de la hora (tramos que cierran o se vuelven inseguros de noche) y la congestión se mide como sobrecarga por tramo e intervalo; la interfaz hace visibles ambas cosas moviendo una hora y viendo la red reaccionar.
 
 ## Operating Context
-Datos 100 % sintéticos (16 nodos, 28 tramos dirigidos, un día simulado de 15:00 a 21:00, intervalos de 5 min). Seis escenarios independientes. Se ejecuta en local; la API lee los datos de la empresa desde fuera del repositorio.
+Datos 100 % sintéticos (16 nodos, 28 tramos dirigidos, un día simulado de 15:00 a 21:00, intervalos de 5 min). Seis escenarios independientes. Se ejecuta en local; la API lee los datos de la empresa de `gestion/`, que se copia del kit y no se versiona.
 
 ## Capabilities and Constraints
 Consulta de ruta con hora de salida y llegada; exclusión de tramos peligrosos según la hora; reparto de lote con métricas de congestión; estados A_TIEMPO, TARDE y SIN_RUTA_SEGURA; comparación con la referencia; extra: probar otra hora cuando no hay ruta segura. Sin mapa geográfico, autenticación, GPS ni pagos. La interfaz está en español.

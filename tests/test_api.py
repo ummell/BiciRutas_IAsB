@@ -59,6 +59,12 @@ def test_lote_compara_equipo_y_referencia():
     assert r["referencia"]["metricas"]["sobrecarga_acumulada_bici_intervalo"] == 348
     assert r["equipo"]["metricas"]["sobrecarga_acumulada_bici_intervalo"] < 348
     assert len(r["equipo"]["asignaciones"]) == 60
+    assert r["equipo"]["evaluador_ok"] is True
+
+
+def test_lote_sin_rutas_tambien_pasa_el_evaluador():
+    r = cliente.get("/api/escenarios/05_destino_sin_acceso/lote").json()
+    assert r["equipo"]["evaluador_ok"] is True
 
 
 def test_linea_tiempo_marca_cuando_cambia_la_red():
@@ -88,3 +94,84 @@ def test_estado_tramos_respeta_el_cierre_y_el_borde():
     assert estado("17:30")["T03"]["seguro"] is True
     assert estado("17:00")["T28"]["seguro"] is False
     assert cliente.get("/api/escenarios/03_cierre_temporal/estado-tramos", params={"hora": "21:00"}).status_code == 422
+
+
+def test_consulta_con_criterio_equilibrado_retorna_opciones():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "18:00",
+            "criterio": "equilibrado",
+        },
+    ).json()
+    assert r["criterio"] == "equilibrado"
+    assert isinstance(r["congestion"], int)
+    assert len(r["opciones"]) >= 1
+    etiquetas = [o["etiqueta"] for o in r["opciones"]]
+    assert etiquetas == ["recomendada", "mas_rapida", "menos_congestion"]
+    for o in r["opciones"]:
+        assert isinstance(o["congestion"], int)
+        assert o["recorrido"]["estado"] == "A_TIEMPO"
+
+
+def test_consulta_sin_criterio_retorna_sus_llaves():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "17:35",
+        },
+    ).json()
+    assert set(r.keys()) == {"estado", "alternativas", "recorrido", "rutas_seguras", "salidas_evaluadas"}
+    assert r["estado"] == "A_TIEMPO"
+    assert r["recorrido"]["pasos"][0]["tramo_id"] == "T01"
+
+
+def test_consulta_con_criterio_invalido_da_422():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "18:00",
+            "criterio": "inventado",
+        },
+    )
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "escenario, origen, destino, salida, limite, motivo",
+    [
+        ("05_destino_sin_acceso", "N01", "N16", "17:00", "18:00", "sin_acceso"),
+        ("01_viaje_normal", "N01", "N16", "20:45", "21:00", "horizonte"),
+        ("04_recorrido_nocturno", "N01", "N03", "18:00", "19:00", "bloqueo"),
+    ],
+)
+def test_consulta_sin_ruta_segura_explica_el_motivo(escenario, origen, destino, salida, limite, motivo):
+    r = cliente.post(
+        f"/api/escenarios/{escenario}/consulta",
+        json={"origen": origen, "destino": destino, "salida_desde": salida, "llegada_limite": limite},
+    ).json()
+    assert r["estado"] == "SIN_RUTA_SEGURA" and r["recorrido"] is None
+    assert r["motivo_sin_ruta"] == motivo
+
+
+def test_consulta_equilibrada_sin_ruta_segura_explica_el_motivo():
+    r = cliente.post(
+        "/api/escenarios/05_destino_sin_acceso/consulta",
+        json={"origen": "N01", "destino": "N16", "salida_desde": "17:00", "llegada_limite": "18:00",
+              "criterio": "equilibrado"},
+    ).json()
+    assert r["estado"] == "SIN_RUTA_SEGURA" and r["motivo_sin_ruta"] == "sin_acceso"
+
+
+def test_consulta_separa_rutas_seguras_de_horas_de_salida():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={"origen": "N01", "destino": "N05", "salida_desde": "17:00", "salida_hasta": "17:10",
+              "llegada_limite": "17:30"},
+    ).json()
+    assert r["alternativas"] == 27
+    assert r["rutas_seguras"] == 9
+    assert r["salidas_evaluadas"] == 3

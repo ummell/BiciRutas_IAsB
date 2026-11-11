@@ -198,10 +198,43 @@ export function SelectorHora({
   );
 }
 
-export function ErrorAviso({ mensaje }: { mensaje: string }) {
+export function ErrorAviso({ mensaje, onReintentar }: { mensaje: string; onReintentar?: () => void }) {
   return (
-    <div role="alert" className="rounded-xl bg-rose-soft px-4 py-3 text-sm font-semibold text-rose-deep">
-      {mensaje}
+    <div
+      role="alert"
+      className="flex items-center justify-between gap-3 rounded-xl bg-rose-soft px-4 py-3 text-sm font-semibold text-rose-deep"
+    >
+      <span>{mensaje}</span>
+      {onReintentar && (
+        <button
+          type="button"
+          onClick={onReintentar}
+          className="shrink-0 rounded-lg border border-rose-deep/30 px-3 py-1.5 text-[13px] font-bold transition-colors hover:bg-white/60"
+        >
+          Reintentar
+        </button>
+      )}
     </div>
+  );
+}
+
+// The answer recalculates on every change, so this only reports progress; it is not an action.
+export function EstadoCalculo({ pendiente, listo }: { pendiente: boolean; listo: boolean }) {
+  return (
+    <p aria-live="polite" className="flex min-h-5 items-center gap-2 text-[13px] font-semibold text-muted">
+      {pendiente ? (
+        <>
+          <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden="true" />
+          Calculando…
+        </>
+      ) : (
+        listo && (
+          <>
+            <span className="size-2 rounded-full bg-bosque-600" aria-hidden="true" />
+            Actualizado
+          </>
+        )
+      )}
+    </p>
   );
 }
