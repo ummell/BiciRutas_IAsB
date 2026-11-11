@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ETIQUETA_OPCION, nivelCongestion } from "./lib/texto";
+import type { Metricas } from "./lib/api";
+import { ETIQUETA_OPCION, explicarLote, nivelCongestion } from "./lib/texto";
 
 describe("nivelCongestion", () => {
   it("devuelve 'Sin congestión' para 0", () => {
@@ -25,5 +26,69 @@ describe("ETIQUETA_OPCION", () => {
   });
   it("tiene la etiqueta menos_congestion", () => {
     expect(ETIQUETA_OPCION.menos_congestion).toBe("Menos congestión");
+  });
+});
+const m = (x: Partial<Metricas>): Metricas => ({
+  sobrecarga_acumulada_bici_intervalo: 0,
+  pares_saturados: 0,
+  maxima_relacion_carga_capacidad: 1,
+  minutos_totales_viaje: 100,
+  minutos_totales_tardanza: 0,
+  viajes_a_tiempo: 10,
+  viajes_tarde: 0,
+  viajes_sin_ruta_segura: 0,
+  ...x,
+});
+
+describe("explicarLote", () => {
+  it("explica que 0 con estrategia significa ningún tramo saturado", () => {
+    const e = explicarLote(m({ sobrecarga_acumulada_bici_intervalo: 36 }), m({}));
+    expect(e.sobrecarga).toBe("0 significa que, con la estrategia, ningún tramo supera su capacidad en ningún intervalo de 5 min.");
+  });
+
+  it("explica cuando ninguno de los dos lados tiene sobrecarga", () => {
+    expect(explicarLote(m({}), m({})).sobrecarga).toBe("Ningún tramo supera su capacidad, ni con ni sin estrategia.");
+  });
+
+  it("explica el 0 cuando ningún viaje tiene ruta segura", () => {
+    const sin = m({ viajes_a_tiempo: 0, viajes_sin_ruta_segura: 3, minutos_totales_viaje: 0 });
+    expect(explicarLote(sin, sin).sobrecarga).toBe(
+      "Ningún viaje tiene ruta segura, así que no hay carga que repartir: 0 es el resultado esperado.",
+    );
+  });
+
+  it("dice cuánto queda por encima de la capacidad", () => {
+    const e = explicarLote(m({ sobrecarga_acumulada_bici_intervalo: 348 }), m({ sobrecarga_acumulada_bici_intervalo: 143 }));
+    expect(e.sobrecarga).toBe("Quedan 143 bici-intervalos por encima de la capacidad; sin estrategia eran 348.");
+  });
+
+  it("explica por qué suben los pares saturados y los viajes tardíos en 02", () => {
+    const ref = m({ sobrecarga_acumulada_bici_intervalo: 348, pares_saturados: 6, maxima_relacion_carga_capacidad: 20.3333, minutos_totales_viaje: 720, viajes_a_tiempo: 60 });
+    const eq = m({ sobrecarga_acumulada_bici_intervalo: 143, pares_saturados: 19, maxima_relacion_carga_capacidad: 6.6667, minutos_totales_viaje: 1242, minutos_totales_tardanza: 89, viajes_a_tiempo: 44, viajes_tarde: 16 });
+    expect(explicarLote(ref, eq).costos).toEqual([
+      "Hay más pares saturados (6 → 19) porque la carga se reparte en más tramos, cada uno mucho menos cargado: el tramo más cargado baja de 20,3× a 6,7× su capacidad.",
+      "16 viajes más llegan tarde (89 min de tardanza en total): el reto prioriza bajar la congestión del conjunto. Mueve «Qué pesa más» hacia la puntualidad para reducirlos.",
+    ]);
+  });
+
+  it("si nadie llega tarde, explica el costo en minutos de viaje", () => {
+    const ref = m({ sobrecarga_acumulada_bici_intervalo: 36, pares_saturados: 6, maxima_relacion_carga_capacidad: 3, minutos_totales_viaje: 96 });
+    const eq = m({ minutos_totales_viaje: 132 });
+    expect(explicarLote(ref, eq).costos).toEqual(["Repartir la demanda cuesta 36 min de viaje más en total, sin que nadie llegue tarde."]);
+  });
+
+  it("usa singular cuando solo un viaje más llega tarde", () => {
+    const e = explicarLote(m({}), m({ viajes_a_tiempo: 9, viajes_tarde: 1, minutos_totales_tardanza: 4 }));
+    expect(e.costos[0]).toMatch(/^1 viaje más llega tarde \(4 min/);
+  });
+
+  it("si baja la sobrecarga sin costo, lo dice", () => {
+    expect(explicarLote(m({ sobrecarga_acumulada_bici_intervalo: 6, pares_saturados: 3 }), m({})).costos).toEqual([
+      "Repartir no cuesta minutos de viaje ni tardanza.",
+    ]);
+  });
+
+  it("sin mejora ni costo no agrega explicaciones", () => {
+    expect(explicarLote(m({}), m({})).costos).toEqual([]);
   });
 });
