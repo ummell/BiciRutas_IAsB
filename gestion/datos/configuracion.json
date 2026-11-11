@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "ciudad_referencia": "Bogotá Imaginada",
+  "naturaleza": "100 % sintético; sin correspondencia geográfica",
+  "fecha_simulada": "2026-01-15",
+  "zona_horaria": "America/Bogota",
+  "inicio": "15:00",
+  "fin": "21:00",
+  "intervalo_min": 5,
+  "inicio_noche": "18:00",
+  "fin_noche": "21:00",
+  "coeficiente_carga_inicial": 0.25,
+  "espera_en_nodos": false
+}

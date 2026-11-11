@@ -1,0 +1,37 @@
+[
+  {
+    "id": "R01",
+    "tramo_id": "T27",
+    "inicio": "15:00",
+    "fin": "21:00",
+    "motivo": "riesgo_vial_alto"
+  },
+  {
+    "id": "R02",
+    "tramo_id": "T28",
+    "inicio": "15:00",
+    "fin": "21:00",
+    "motivo": "no_habilitado_bicicletas"
+  },
+  {
+    "id": "R03",
+    "tramo_id": "T18",
+    "inicio": "18:00",
+    "fin": "21:00",
+    "motivo": "riesgo_seguridad_personal"
+  },
+  {
+    "id": "R04",
+    "tramo_id": "T25",
+    "inicio": "15:00",
+    "fin": "21:00",
+    "motivo": "cierre_total"
+  },
+  {
+    "id": "R05",
+    "tramo_id": "T26",
+    "inicio": "15:00",
+    "fin": "21:00",
+    "motivo": "cierre_total"
+  }
+]
