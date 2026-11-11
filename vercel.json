@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && cd web && corepack pnpm install --frozen-lockfile",
+  "buildCommand": "cd web && corepack pnpm build",
+  "outputDirectory": "web/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "{web/node_modules/**,web/tsconfig.tsbuildinfo,tests/**,resultados/**,.git/**,.vercel/**}"
+    }
+  }
+}
