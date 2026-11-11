@@ -57,6 +57,8 @@ export function MapaCanvas(p: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const arrastre = useRef<{ x: number; y: number; vb: Caja; movido: boolean } | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
+  const punteros = useRef(new Map<number, { x: number; y: number }>());
+  const pellizco = useRef<{ dist: number; cx: number; cy: number; vb: Caja } | null>(null);
   const rutaRefs = useRef<(SVGPathElement | null)[]>([]);
   const [bici, setBici] = useState<{ x: number; y: number } | null>(null);
 
@@ -151,10 +153,36 @@ export function MapaCanvas(p: Props) {
   }, []);
 
   function bajar(e: PE<SVGSVGElement>) {
-    if (e.button !== 0 || e.pointerType === "touch") return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    punteros.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (punteros.current.size === 2) {
+      // Segundo dedo: empieza el pellizco para acercar o alejar.
+      const [a, b] = [...punteros.current.values()];
+      pellizco.current = { dist: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, vb };
+      if (arrastre.current) arrastre.current.movido = true;
+      setArrastrando(true);
+      return;
+    }
+    if (punteros.current.size > 2) return;
     arrastre.current = { x: e.clientX, y: e.clientY, vb, movido: false };
   }
   function mover(e: PE<SVGSVGElement>) {
+    if (!punteros.current.has(e.pointerId)) return;
+    punteros.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pz = pellizco.current;
+    if (pz && punteros.current.size >= 2) {
+      const [a, b] = [...punteros.current.values()];
+      const r = svgRef.current!.getBoundingClientRect();
+      const w = Math.min(2600, Math.max(180, (pz.vb.w * pz.dist) / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y))));
+      const h = pz.vb.h * (w / pz.vb.w);
+      // El punto del mapa que estaba entre los dedos sigue entre los dedos.
+      const mx = pz.vb.x + ((pz.cx - r.left) / r.width) * pz.vb.w;
+      const my = pz.vb.y + ((pz.cy - r.top) / r.height) * pz.vb.h;
+      const fx = ((a.x + b.x) / 2 - r.left) / r.width;
+      const fy = ((a.y + b.y) / 2 - r.top) / r.height;
+      p.setVb(() => ({ x: mx - fx * w, y: my - fy * h, w, h }));
+      return;
+    }
     const a = arrastre.current;
     if (!a) return;
     const dx = e.clientX - a.x;
@@ -170,7 +198,20 @@ export function MapaCanvas(p: Props) {
     p.setVb(() => ({ ...a.vb, x: a.vb.x - dx * s, y: a.vb.y - dy * s }));
   }
   function soltar(e: PE<SVGSVGElement>) {
-    if (arrastre.current?.movido) svgRef.current?.releasePointerCapture(e.pointerId);
+    if (!punteros.current.delete(e.pointerId)) return;
+    if (pellizco.current) {
+      if (punteros.current.size === 1) {
+        // Queda un dedo: sigue arrastrando desde donde está, sin saltos.
+        const [q] = [...punteros.current.values()];
+        pellizco.current = null;
+        arrastre.current = { x: q.x, y: q.y, vb, movido: true };
+        return;
+      }
+      if (punteros.current.size >= 2) return;
+      pellizco.current = null;
+    }
+    if (punteros.current.size > 0) return;
+    if (svgRef.current?.hasPointerCapture(e.pointerId)) svgRef.current.releasePointerCapture(e.pointerId);
     window.setTimeout(() => {
       arrastre.current = null;
     }, 0);
@@ -196,8 +237,11 @@ export function MapaCanvas(p: Props) {
       onPointerDown={bajar}
       onPointerMove={mover}
       onPointerUp={soltar}
-      onPointerLeave={soltar}
-      style={{ background: c.tierra, transition: "background 400ms", touchAction: "pan-y" }}
+      onPointerCancel={soltar}
+      onPointerLeave={(e) => {
+        if (!svgRef.current?.hasPointerCapture(e.pointerId)) soltar(e);
+      }}
+      style={{ background: c.tierra, transition: "background 400ms", touchAction: "none" }}
     >
       <defs>
         <filter id="sombra-pin" x="-50%" y="-50%" width="200%" height="200%">
