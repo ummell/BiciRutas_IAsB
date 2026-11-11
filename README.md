@@ -158,6 +158,7 @@ Levantar la aplicación web (requiere Node.js y pnpm, y la API corriendo en el p
 pnpm --dir web install
 pnpm --dir web dev          # http://localhost:5173, reenvía /api a la API local
 pnpm --dir web build        # comprobación de tipos y build de producción
+pnpm --dir web test         # tests de la web: mapa por rol, modo vivo y movimiento reducido
 ```
 
 Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `http://localhost:5173/#lote/02_demanda_concentrada`.

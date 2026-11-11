@@ -295,14 +295,23 @@ export function cajaDe(puntos: P[], margen = 0): Caja {
   return { x, y, w: Math.max(...xs) + margen - x, h: Math.max(...ys) + margen - y };
 }
 
-export function encuadrar(caja: Caja, ancho: number, alto: number, izquierda: number, derecha = 150): Caja {
+export function encuadrar(
+  caja: Caja,
+  ancho: number,
+  alto: number,
+  izquierda: number,
+  derecha = 150,
+  arriba = 15,
+  abajo = 75,
+): Caja {
   const util = Math.max(ancho - izquierda - derecha, 200);
-  const s = Math.max(caja.w / util, caja.h / Math.max(alto - 90, 200));
+  const utilAlto = Math.max(alto - arriba - abajo, 200);
+  const s = Math.max(caja.w / util, caja.h / utilAlto);
   const w = ancho * s;
   const h = alto * s;
   const cx = caja.x + caja.w / 2;
   const cy = caja.y + caja.h / 2;
-  return { x: cx - (izquierda + util / 2) * s, y: cy - (alto / 2 - 30) * s, w, h };
+  return { x: cx - (izquierda + util / 2) * s, y: cy - (arriba + (alto - arriba - abajo) / 2) * s, w, h };
 }
 
 export function escalaBonita(metrosPorPx: number): { metros: number; px: number } {

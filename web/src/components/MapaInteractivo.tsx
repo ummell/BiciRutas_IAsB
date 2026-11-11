@@ -87,6 +87,7 @@ export function MapaInteractivo(p: Props) {
   const tramos = useMemo(() => new Map(red.tramos.map((t) => [t.id, t])), [red.tramos]);
   const nombre = useCallback((id: string) => red.nodos.find((n) => n.id === id)?.nombre ?? id, [red.nodos]);
   const derecha = tam.w >= 700 ? 70 : 56;
+  const margenV: [number, number] = p.simple ? [tam.w >= 640 ? 120 : 190, 20] : [15, 75];
 
   const cajaRed = useMemo(() => {
     const pts = red.nodos.map((n) => ({ x: n.x, y: n.y }));
@@ -156,7 +157,7 @@ export function MapaInteractivo(p: Props) {
     if (!tam.w || !tam.h) return;
     const actual = vbRef.current;
     if (!actual) {
-      const n = encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha);
+      const n = encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha, ...margenV);
       vbRef.current = n;
       setVbEstado(n);
       return;
@@ -174,7 +175,7 @@ export function MapaInteractivo(p: Props) {
     setMinAnim(null);
     setNodoSel(null);
     if (!tam.w || !vbRef.current) return;
-    volarA(encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha));
+    volarA(encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha, ...margenV));
   }, [p.rutaKey]);
 
   useEffect(() => {
@@ -266,7 +267,7 @@ export function MapaInteractivo(p: Props) {
   }
 
   function recentrar() {
-    if (tam.w) volarA(encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha));
+    if (tam.w) volarA(encuadrar(cajaRuta ?? cajaRed, tam.w, tam.h, 0, derecha, ...margenV));
   }
 
   function verCalle(id: string) {
