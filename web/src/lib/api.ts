@@ -77,10 +77,18 @@ export interface OpcionEquilibrada {
   recorrido: Recorrido;
 }
 
+/** Congestion weight of the delivered plan (estrategia.PESO_CONGESTION). */
+export const PESO_PLAN = 3;
+
+export type MotivoSinRuta = "horizonte" | "sin_acceso" | "bloqueo";
+
 export interface ConsultaOut {
   estado: Estado;
   alternativas: number;
   recorrido: Recorrido | null;
+  motivo_sin_ruta?: MotivoSinRuta;
+  rutas_seguras?: number;
+  salidas_evaluadas?: number;
   criterio?: "rapido" | "equilibrado";
   congestion?: number | null;
   opciones?: OpcionEquilibrada[];
@@ -122,6 +130,7 @@ export interface LoteLado {
   metricas: Metricas;
   asignaciones: Asignacion[];
   ocupacion: OcupacionFila[];
+  evaluador_ok?: boolean;
 }
 export interface Lote {
   escenario_id: string;
@@ -133,14 +142,6 @@ export interface EstadoTramo {
   tramo_id: string;
   seguro: boolean;
   motivo: string | null;
-}
-export interface TramoBloqueado {
-  tramo_id: string;
-  motivo: string;
-}
-export interface LineaTiempo {
-  intervalo_min: number;
-  horas: { hora: string; bloqueados: TramoBloqueado[] }[];
 }
 export interface EstadoTramos {
   hora: string;
@@ -179,7 +180,6 @@ export const api = {
       body: JSON.stringify(datos),
     }),
   lote: (id: string, peso: number) => pedir<Lote>(`/api/escenarios/${id}/lote?peso=${peso}`),
-  lineaTiempo: (id: string) => pedir<LineaTiempo>(`/api/escenarios/${id}/linea-tiempo`),
   estadoTramos: (id: string, hora: string) =>
     pedir<EstadoTramos>(`/api/escenarios/${id}/estado-tramos?hora=${hora}`),
 };

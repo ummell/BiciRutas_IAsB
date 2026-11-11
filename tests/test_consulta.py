@@ -111,3 +111,14 @@ def test_mejor_individual_coincide_con_la_referencia_oficial(escenario):
             assert a_hora(r.salida) == fila["salida"], (escenario, viaje["id"])
             assert [p.tramo_id for p in r.pasos] == fila["tramos"], (escenario, viaje["id"])
             assert r.estado == fila["estado"], (escenario, viaje["id"])
+
+
+def test_motivo_sin_ruta_distingue_horizonte_bloqueo_y_sin_acceso():
+    from bicirutas.consulta import motivo_sin_ruta
+
+    def viaje(o, d, s, l):
+        return dict(id="X", origen=o, destino=d, salida_desde=s, salida_hasta=s, llegada_limite=l)
+
+    assert motivo_sin_ruta(cargar_escenario("05_destino_sin_acceso"), viaje("N01", "N16", "17:00", "18:00")) == "sin_acceso"
+    assert motivo_sin_ruta(cargar_escenario("01_viaje_normal"), viaje("N01", "N16", "20:45", "21:00")) == "horizonte"
+    assert motivo_sin_ruta(cargar_escenario("04_recorrido_nocturno"), viaje("N01", "N03", "18:00", "19:00")) == "bloqueo"

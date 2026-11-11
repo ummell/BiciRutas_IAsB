@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { Metricas, Red, Tramo, Viaje } from "./lib/api";
+import type { Metricas, Recorrido, Red, Tramo, Viaje } from "./lib/api";
 import {
   ETIQUETA_OPCION,
   etiquetaViaje,
   explicarLote,
   nivelCongestion,
+  notaLote,
+  planDominante,
   restriccionesDelEscenario,
-  resumenViajes,
+  textoAlternativas,
+  textoSinRuta,
+  tipoCambio,
 } from "./lib/texto";
 
 describe("nivelCongestion", () => {
@@ -54,7 +58,7 @@ describe("explicarLote", () => {
   });
 
   it("explica cuando ninguno de los dos lados tiene sobrecarga", () => {
-    expect(explicarLote(m({}), m({})).sobrecarga).toBe("Ningún tramo supera su capacidad, ni con ni sin estrategia.");
+    expect(explicarLote(m({}), m({})).sobrecarga).toBe("Ningún tramo supera su capacidad, ni con estrategia ni en la referencia.");
   });
 
   it("explica el 0 cuando ningún viaje tiene ruta segura", () => {
@@ -66,7 +70,7 @@ describe("explicarLote", () => {
 
   it("dice cuánto queda por encima de la capacidad", () => {
     const e = explicarLote(m({ sobrecarga_acumulada_bici_intervalo: 348 }), m({ sobrecarga_acumulada_bici_intervalo: 143 }));
-    expect(e.sobrecarga).toBe("Quedan 143 bici-intervalos por encima de la capacidad; sin estrategia eran 348.");
+    expect(e.sobrecarga).toBe("Quedan 143 bici-intervalos por encima de la capacidad; en la referencia eran 348.");
   });
 
   it("explica por qué suben los pares saturados y los viajes tardíos en 02", () => {
@@ -74,6 +78,7 @@ describe("explicarLote", () => {
     const eq = m({ sobrecarga_acumulada_bici_intervalo: 143, pares_saturados: 19, maxima_relacion_carga_capacidad: 6.6667, minutos_totales_viaje: 1242, minutos_totales_tardanza: 89, viajes_a_tiempo: 44, viajes_tarde: 16 });
     expect(explicarLote(ref, eq).costos).toEqual([
       "Hay más pares saturados (6 → 19) porque la carga se reparte en más tramos, cada uno mucho menos cargado: el tramo más cargado baja de 20,3× a 6,7× su capacidad.",
+      "Los minutos de viaje suben de 720 a 1242 (+522) porque los viajes desviados toman corredores más largos que la ruta más rápida.",
       "16 viajes más llegan tarde (89 min de tardanza en total): el reto prioriza bajar la congestión del conjunto. Mueve «Qué pesa más» hacia la puntualidad para reducirlos.",
     ]);
   });
@@ -112,18 +117,6 @@ describe("viajes del escenario", () => {
     modalidad,
     ...extra,
   });
-  const nombre = (id: string) => ({ N01: "Portal Andino", N05: "Casa del Encuentro" })[id] ?? id;
-
-  it("resume los viajes idénticos y explica qué prueba el escenario", () => {
-    expect(resumenViajes([v("V001", "propia"), v("V002", "publica")], nombre)).toBe(
-      "Los 2 viajes de este escenario van de Portal Andino a Casa del Encuentro, salen entre 17:00 y 17:10 y deben llegar antes de las 17:35. Solo cambia la modalidad: el escenario prueba qué pasa cuando muchos ciclistas piden la misma ruta.",
-    );
-  });
-
-  it("no resume si los viajes son distintos", () => {
-    expect(resumenViajes([v("V001", "propia"), v("V002", "propia", { destino: "N16" })], nombre)).toBeNull();
-  });
-
   it("etiqueta cada viaje con lo que cambia", () => {
     const iguales = [v("V001", "propia"), v("V002", "publica")];
     expect(etiquetaViaje(iguales[0], iguales)).toBe("V001 · bici propia");
@@ -174,5 +167,101 @@ describe("restriccionesDelEscenario", () => {
   it("incluye un tramo no habilitado aunque no tenga restricción", () => {
     const sinR = { ...red, restricciones: [] } as Red;
     expect(restriccionesDelEscenario(sinR).map((f) => f.tramo)).toEqual(["T02", "T28"]);
+  });
+});
+
+const rec = (salida: string, llegada: string, tramos: string[], tardanza = 0): Recorrido => ({
+  viaje_id: "V019",
+  estado: tardanza > 0 ? "TARDE" : "A_TIEMPO",
+  salida,
+  llegada,
+  duracion_min: 0,
+  tardanza_min: tardanza,
+  pasos: tramos.map((t) => ({ tramo_id: t, entrada: salida, salida: llegada })),
+});
+
+describe("tipoCambio", () => {
+  const base = rec("17:00", "17:12", ["T01", "T02"]);
+  it("distingue igual, otra hora, otra ruta y ambas", () => {
+    expect(tipoCambio(base, rec("17:00", "17:12", ["T01", "T02"]))).toBe("igual");
+    expect(tipoCambio(base, rec("17:05", "17:17", ["T01", "T02"]))).toBe("hora");
+    expect(tipoCambio(base, rec("17:00", "17:20", ["T13", "T05"]))).toBe("ruta");
+    expect(tipoCambio(base, rec("17:10", "17:38", ["T13", "T05"]))).toBe("ruta_hora");
+  });
+  it("sin recorrido en algún lado no hay cambio que mostrar", () => {
+    expect(tipoCambio(null, base)).toBeNull();
+    expect(tipoCambio(base, null)).toBeNull();
+  });
+});
+
+describe("notaLote", () => {
+  const individual = rec("17:00", "17:12", ["T01", "T02"]);
+  it("dice cuándo y por dónde sale en el lote y cuánto llega tarde (02, V019)", () => {
+    const lote = { viaje_id: "V019", estado: "TARDE" as const, recorrido: rec("17:05", "17:33", ["T13", "T05"], 3) };
+    expect(notaLote(individual, lote)).toBe(
+      "En el reparto del lote, V019 sale a las 17:05 por otra ruta y llega 3 min tarde (17:33), para no saturar los tramos.",
+    );
+  });
+  it("si solo cambia la hora y llega a tiempo, lo dice", () => {
+    const lote = { viaje_id: "V001", estado: "A_TIEMPO" as const, recorrido: rec("17:05", "17:17", ["T01", "T02"]) };
+    expect(notaLote(individual, lote)).toBe(
+      "En el reparto del lote, V001 sale a las 17:05 por la misma ruta y llega a tiempo (17:17), para no saturar los tramos.",
+    );
+  });
+  it("si el lote no cambia nada, lo confirma", () => {
+    const lote = { viaje_id: "V001", estado: "A_TIEMPO" as const, recorrido: rec("17:00", "17:12", ["T01", "T02"]) };
+    expect(notaLote(individual, lote)).toBe("En el reparto del lote, V001 mantiene esta misma ruta y hora.");
+  });
+  it("sin asignación o sin ruta no hay nota", () => {
+    expect(notaLote(individual, undefined)).toBeNull();
+    expect(notaLote(individual, { viaje_id: "V001", estado: "SIN_RUTA_SEGURA", recorrido: null })).toBeNull();
+  });
+});
+
+describe("textoSinRuta", () => {
+  it("no culpa a un bloqueo cuando la simulación se acaba", () => {
+    expect(textoSinRuta("horizonte", "21:00")).toBe(
+      "Ninguna ruta segura llega antes de las 21:00, cuando termina la simulación. Prueba una salida más temprana.",
+    );
+  });
+  it("dice que cambiar la hora no ayuda si el destino está cerrado toda la simulación", () => {
+    expect(textoSinRuta("sin_acceso", "21:00")).toBe(
+      "Los tramos de acceso a ese destino están bloqueados durante toda la simulación. Cambiar la hora de salida no ayuda.",
+    );
+  });
+  it("si es un bloqueo a esa hora, sugiere probar otra", () => {
+    const t =
+      "Todos los recorridos posibles usan algún tramo bloqueado a esa hora. Otra hora de salida sí puede tener ruta segura.";
+    expect(textoSinRuta("bloqueo", "21:00")).toBe(t);
+    expect(textoSinRuta(undefined, "21:00")).toBe(t);
+  });
+});
+
+describe("planDominante", () => {
+  const n = (sobrecarga: number, tardanza: number) =>
+    m({ sobrecarga_acumulada_bici_intervalo: sobrecarga, minutos_totales_tardanza: tardanza });
+  it("marca los niveles que otro mejora en sobrecarga y en tardanza a la vez (02)", () => {
+    const niveles = [n(181, 12), n(165, 28), n(138, 87), n(143, 89), n(143, 89)];
+    expect(planDominante(niveles)).toEqual([null, null, null, 2, 2]);
+  });
+  it("un empate exacto no cuenta como peor", () => {
+    expect(planDominante([n(10, 5), n(10, 5)])).toEqual([null, null]);
+  });
+});
+
+describe("explicarLote en el extremo de puntualidad", () => {
+  it("no pide mover el control cuando ya está en el extremo", () => {
+    const ref = m({ sobrecarga_acumulada_bici_intervalo: 348, viajes_a_tiempo: 60 });
+    const eq = m({ sobrecarga_acumulada_bici_intervalo: 181, viajes_tarde: 6, viajes_a_tiempo: 54, minutos_totales_tardanza: 12 });
+    const { costos } = explicarLote(ref, eq, { maxPuntualidad: true });
+    expect(costos.join(" ")).toContain("Incluso con el control en «más puntualidad»");
+    expect(costos.join(" ")).not.toContain("Mueve");
+  });
+});
+
+describe("textoAlternativas", () => {
+  it("separa rutas seguras de horas de salida", () => {
+    expect(textoAlternativas(9, 3)).toBe("9 rutas seguras · 3 horas de salida evaluadas");
+    expect(textoAlternativas(1, 1)).toBe("1 ruta segura · 1 hora de salida evaluada");
   });
 });

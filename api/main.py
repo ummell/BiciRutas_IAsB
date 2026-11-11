@@ -1,14 +1,18 @@
+import json
+import tempfile
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from bicirutas.consulta import consultar
+from bicirutas.consulta import candidatos, consultar, motivo_sin_ruta, rutas_distintas, salidas_permitidas
 from bicirutas.datos import cargar_escenario, listar_escenarios
 from bicirutas.estrategia import PESO_CONGESTION, repartir
-from bicirutas.lote import construir_ocupacion, metricas, referencia_lote
+from bicirutas.generar import validar_con_evaluador
+from bicirutas.lote import a_resultado_json, construir_ocupacion, metricas, referencia_lote
 from bicirutas.modelo import RutaInvalida, pasar_tramo
 from bicirutas.tiempo import a_hora, a_minutos
 
@@ -120,7 +124,7 @@ def consulta(escenario_id: str, datos: ConsultaIn):
     if datos.criterio == "equilibrado":
         ocupacion = _ocupacion(escenario_id)
         c = consultar(esc, viaje, ocupacion)
-        return dict(
+        out = dict(
             estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido),
             criterio=datos.criterio, congestion=c.congestion,
             opciones=[
@@ -128,8 +132,23 @@ def consulta(escenario_id: str, datos: ConsultaIn):
                 for o in c.opciones
             ],
         )
-    c = consultar(esc, viaje)
-    return dict(estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido))
+    else:
+        c = consultar(esc, viaje)
+        out = dict(estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido))
+    out["rutas_seguras"] = rutas_distintas(candidatos(esc, viaje))
+    out["salidas_evaluadas"] = len(salidas_permitidas(esc, viaje))
+    if c.estado == "SIN_RUTA_SEGURA":
+        out["motivo_sin_ruta"] = motivo_sin_ruta(esc, viaje)
+    return out
+
+
+def _evaluador_ok(esc, asignaciones: list) -> bool:
+    # Runs the official evaluator on the plan shown, so the page can prove it is valid.
+    with tempfile.TemporaryDirectory() as carpeta:
+        archivo = Path(carpeta) / f"{esc.id}.json"
+        plan = a_resultado_json(esc, asignaciones, "BiciRutas")
+        archivo.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+        return validar_con_evaluador(esc.id, archivo)
 
 
 @lru_cache(maxsize=32)
@@ -143,6 +162,7 @@ def _lote(escenario_id: str, peso: int):
             metricas=metricas(esc, propio),
             asignaciones=_asignaciones(propio),
             ocupacion=_mapa_calor(esc, propio),
+            evaluador_ok=_evaluador_ok(esc, propio),
         ),
         referencia=dict(
             metricas=metricas(esc, base),

@@ -5,7 +5,7 @@ import networkx as nx
 
 from .datos import Escenario
 from .modelo import Recorrido, RutaInvalida, simular_recorrido
-from .tiempo import a_minutos
+from .tiempo import a_hora, a_minutos
 
 
 def rutas_simples(esc: Escenario, origen: str, destino: str) -> list:
@@ -33,6 +33,29 @@ def candidatos(esc: Escenario, viaje: dict) -> list[Recorrido]:
                 continue
     seguros.sort(key=lambda r: (r.duracion_min, r.salida, [p.tramo_id for p in r.pasos]))
     return seguros
+
+
+def motivo_sin_ruta(esc: Escenario, viaje: dict) -> str:
+    """Why a trip has no safe route: 'horizonte', 'sin_acceso' or 'bloqueo'."""
+    for tramos in rutas_simples(esc, viaje["origen"], viaje["destino"]):
+        for salida in salidas_permitidas(esc, viaje):
+            try:
+                simular_recorrido(esc, viaje, salida, tramos)
+            except RutaInvalida as e:
+                if "horizonte" in str(e):
+                    return "horizonte"
+    paso = esc.config["intervalo_min"]
+    todo_el_dia = dict(
+        viaje,
+        salida_desde=esc.config["inicio"],
+        salida_hasta=a_hora(a_minutos(esc.config["fin"]) - paso),
+        llegada_limite=esc.config["fin"],
+    )
+    return "bloqueo" if candidatos(esc, todo_el_dia) else "sin_acceso"
+
+
+def rutas_distintas(recorridos: list[Recorrido]) -> int:
+    return len({tuple(p.tramo_id for p in r.pasos) for r in recorridos})
 
 
 def mejor_individual(esc: Escenario, viaje: dict) -> Recorrido | None:

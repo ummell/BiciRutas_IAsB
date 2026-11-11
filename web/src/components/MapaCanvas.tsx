@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as PE } from "react";
 import type { EstadoTramo, Paso, Red } from "../lib/api";
-import { colorTrafico, MARCA, TRAFICO, type Caja, type Fondo, type Paleta, type Via } from "../lib/mapa";
+import { colorTrafico, MARCA, partirNombre, TRAFICO, type Caja, type Fondo, type Paleta, type Via } from "../lib/mapa";
 import { aMin } from "../lib/time";
 
 export interface Capas {
@@ -659,9 +659,9 @@ export function MapaCanvas(p: Props) {
           const hov = n.id === nodoHover;
           const clave = esO || esD || sel;
           const parq = Boolean(p.vivo && p.parqueaderos?.has(n.id));
-          const verNombre = clave || hov || parq || k < 1.15;
+          const verNombre = p.vivo || clave || hov || parq || k < 1.15;
           const ok = conCobertura.has(n.id);
-          const sep = p.vivo ? (esD ? 22 : parq && !esO ? 19 : 16) : esD ? 17 : 11;
+          const sep = esD ? 17 : 11;
           return (
             <g
               key={n.id}
@@ -766,11 +766,31 @@ export function MapaCanvas(p: Props) {
                   </text>
                 </g>
               )}
-              {verNombre && (
+              {verNombre && p.vivo && (
+                <text
+                  y={esD || esO || parq ? 26 : 21}
+                  textAnchor="middle"
+                  fontSize={clave || hov ? 14.5 : 13}
+                  fontWeight={clave ? 800 : 700}
+                  fill={c.texto}
+                  stroke={c.halo}
+                  strokeWidth={4.5}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                  pointerEvents="none"
+                >
+                  {partirNombre(n.nombre).map((linea, i) => (
+                    <tspan key={linea} x={0} dy={i === 0 ? 0 : "1.1em"}>
+                      {linea}
+                    </tspan>
+                  ))}
+                </text>
+              )}
+              {verNombre && !p.vivo && (
                 <text
                   x={sep}
-                  y={esD ? (p.vivo ? -26 : -20) : 4.5}
-                  fontSize={p.vivo ? (clave || hov ? 14 : 12.5) : clave ? 13 : 12}
+                  y={esD ? -20 : 4.5}
+                  fontSize={clave ? 13 : 12}
                   fontWeight={clave ? 700 : 600}
                   fill={c.texto}
                   stroke={c.halo}

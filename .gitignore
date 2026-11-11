@@ -9,3 +9,7 @@ dist/
 
 # Datos de la empresa: se copian del kit, no se versionan
 gestion/
+
+# Material interno de la demo y herramientas locales
+GUION_DEMO.md
+.atl/
