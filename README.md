@@ -237,7 +237,7 @@ Lo que ias software describió para su proyecto Bike y en qué estado queda en e
 |-------|-------------|-----------|
 | Programación | Samuel Wilkie | Desarrollo de backend y API |
 | Programación | Melissa Montoya | Desarrollo de frontend |
-| Programación | Michael Moreno | Desarrollador |
+| Programación | Michael Moreno | Desarrollador/Despliegue|
 | Análisis | Lina Salinas | Análisis de software y QA |
 | Administración y mercadeo | Juliana Villada | Mercadeo, CRM y experiencia de usuario |
 
