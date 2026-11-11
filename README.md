@@ -171,9 +171,19 @@ pnpm --dir web test         # tests de la web: mapa por rol, modo vivo y movimie
 
 Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `http://localhost:5173/#lote/02_demanda_concentrada`.
 
+### Ejecutar con Docker
+
+Con Docker Engine y el complemento Docker Compose instalados, inicia la aplicación completa desde la raíz del repositorio:
+
+```bash
+docker compose up --build
+```
+
+Abre `http://localhost:8080`. Compose levanta la API Python y el frontend React; Nginx sirve la aplicación y reenvía las solicitudes `/api` a la API. Para detenerla, ejecuta `docker compose down`.
+
 ### Despliegue en Vercel
 
-El despliegue usa Vercel sin servidor (configuración en `vercel.json`): la web se compila a `web/dist` y la API FastAPI corre como función desde `api/index.py`, que expone la app de `api/main.py` y las solicitudes `/api/*` se redirigen a ella. Docker y Nginx se retiraron del repositorio. `api/index.py` busca los datos en `gestion/`, y los archivos necesarios están versionados (ver [Datos de la empresa](#datos-de-la-empresa)).
+El despliegue en línea usa Vercel sin servidor (configuración en `vercel.json`): la web se compila a `web/dist` y la API FastAPI corre como función desde `api/index.py`, que expone la app de `api/main.py` y las solicitudes `/api/*` se redirigen a ella. `api/index.py` busca los datos en `gestion/`, y los archivos necesarios están versionados (ver [Datos de la empresa](#datos-de-la-empresa)).
 
 ### Variables de entorno
 
