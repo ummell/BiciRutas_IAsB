@@ -25,7 +25,6 @@ export interface Paleta {
   noche: boolean;
 }
 
-/* Valores de DESIGN.md, secciones 3 y 7. */
 export const MARCA = {
   bosque: "#193a27",
   bosque900: "#0f2318",
@@ -328,7 +327,6 @@ export function formatoDistancia(m: number): string {
   return m >= 1000 ? `${(m / 1000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} km` : `${m} m`;
 }
 
-/** Splits a long station name into two balanced lines so labels fit between neighbouring stations. */
 export function partirNombre(nombre: string, maximo = 13): string[] {
   const palabras = nombre.split(" ");
   if (nombre.length <= maximo || palabras.length < 2) return [nombre];
