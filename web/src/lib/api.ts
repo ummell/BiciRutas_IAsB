@@ -69,10 +69,21 @@ export interface Recorrido {
   tardanza_min: number;
   pasos: Paso[];
 }
+export type EtiquetaOpcion = "recomendada" | "mas_rapida" | "menos_congestion";
+
+export interface OpcionEquilibrada {
+  etiqueta: EtiquetaOpcion;
+  congestion: number;
+  recorrido: Recorrido;
+}
+
 export interface ConsultaOut {
   estado: Estado;
   alternativas: number;
   recorrido: Recorrido | null;
+  criterio?: "rapido" | "equilibrado";
+  congestion?: number | null;
+  opciones?: OpcionEquilibrada[];
 }
 export interface ConsultaIn {
   origen: string;
@@ -80,6 +91,7 @@ export interface ConsultaIn {
   salida_desde: string;
   llegada_limite: string;
   salida_hasta?: string;
+  criterio?: "rapido" | "equilibrado";
 }
 export interface Metricas {
   sobrecarga_acumulada_bici_intervalo: number;

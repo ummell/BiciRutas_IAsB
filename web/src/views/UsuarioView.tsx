@@ -3,8 +3,9 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { MapaInteractivo } from "../components/MapaInteractivo";
 import { ErrorAviso, EstadoChip } from "../components/ui";
-import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
+import { api, ApiError, type ConsultaOut, type Recorrido, type Red } from "../lib/api";
 import { formatoDistancia } from "../lib/mapa";
+import { ETIQUETA_OPCION, nivelCongestion } from "../lib/texto";
 import { aHora, aMin } from "../lib/time";
 
 const CAMPO =
@@ -19,13 +20,22 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
   const [limite, setLimite] = useState("18:00");
   const [resultado, setResultado] = useState<ConsultaOut | null>(null);
   const [version, setVersion] = useState(0);
+  const [indiceSeleccionado, setIndiceSeleccionado] = useState(0);
 
   const mutacion = useMutation({
     mutationFn: () =>
-      api.consulta(escenario, { origen, destino, salida_desde: salida, salida_hasta: salida, llegada_limite: limite }),
+      api.consulta(escenario, {
+        origen,
+        destino,
+        salida_desde: salida,
+        salida_hasta: salida,
+        llegada_limite: limite,
+        criterio: "equilibrado",
+      }),
     onSuccess: (r) => {
       setResultado(r);
       setVersion((v) => v + 1);
+      setIndiceSeleccionado(0);
     },
   });
 
@@ -35,7 +45,12 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
 
   const tramos = useMemo(() => new Map(red.tramos.map((t) => [t.id, t])), [red.tramos]);
   const nombre = (id: string) => red.nodos.find((n) => n.id === id)?.nombre ?? id;
-  const r = resultado?.recorrido ?? null;
+  const opciones = resultado?.opciones;
+  const r: Recorrido | null =
+    opciones && opciones.length > 0
+      ? opciones[indiceSeleccionado]?.recorrido ?? null
+      : resultado?.recorrido ?? null;
+  const chipEstado = opciones?.length && r ? r.estado : resultado?.estado ?? "SIN_RUTA_SEGURA";
   const distancia = r ? r.pasos.reduce((s, p) => s + (tramos.get(p.tramo_id)?.distancia_m ?? 0), 0) : 0;
   const mismo = origen !== "" && origen === destino;
   const puede = !mismo && origen !== "" && destino !== "" && !mutacion.isPending;
@@ -162,7 +177,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
               exit={reducir ? undefined : { opacity: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              <EstadoChip estado={resultado.estado} grande />
+              <EstadoChip estado={chipEstado} grande />
               {r ? (
                 <>
                   <div className="mt-4 flex items-end gap-3">
@@ -198,6 +213,37 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
                   <p className="mt-1 text-[13.5px] text-white/75">Prueba con otra hora de salida o con otro destino.</p>
                 </>
               )}
+              {opciones && opciones.length > 1 && (
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-white/50">Opciones de ruta</h3>
+                  <div className="mt-2.5 grid gap-2">
+                    {opciones.map((op, i) => (
+                      <button
+                        key={op.etiqueta}
+                        type="button"
+                        aria-pressed={i === indiceSeleccionado}
+                        onClick={() => setIndiceSeleccionado(i)}
+                        className={`w-full rounded-xl border p-3 text-left transition-colors ${
+                          i === indiceSeleccionado
+                            ? "border-amber-light bg-white/15"
+                            : "border-white/10 hover:border-white/25"
+                        }`}
+                      >
+                        <span className="text-[13px] font-bold text-amber-light">
+                          {ETIQUETA_OPCION[op.etiqueta]}
+                        </span>
+                        <div className="mt-1 flex items-center gap-3 text-[13px] text-white/80">
+                          <span className="tnum font-medium">{op.recorrido.duracion_min} min</span>
+                          <span className="tnum">llega {op.recorrido.llegada}</span>
+                        </div>
+                        <p className="mt-0.5 text-[12px] text-white/60">
+                          {nivelCongestion(op.congestion)} · {op.congestion} bici-intervalos
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.section>
           )}
         </AnimatePresence>
@@ -213,7 +259,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
         destino={destino || undefined}
         ruta={r?.pasos}
         rutaTarde={r?.estado === "TARDE"}
-        rutaKey={`${version}`}
+        rutaKey={`${version}-${indiceSeleccionado}`}
         onOrigen={(id) => {
           setOrigen(id);
           if (id === destino) setDestino("");
