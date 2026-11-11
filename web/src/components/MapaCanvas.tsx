@@ -37,6 +37,8 @@ interface Props {
   minutoBici: number | null;
   calor?: Record<string, number>;
   calorMax?: number;
+  vivo?: boolean;
+  radioCobertura?: number;
 }
 
 function colorSobrecarga(v: number, max: number): string {
@@ -74,6 +76,30 @@ export function MapaCanvas(p: Props) {
     });
     return out;
   }, [p.ruta, tramos]);
+
+  const animar = Boolean(p.vivo) && !reducir;
+  const seguros = useMemo(
+    () => new Set(p.red.tramos.filter((t) => t.tipo !== "via_no_habilitada" && p.estado[t.id]?.seguro !== false).map((t) => t.id)),
+    [p.red.tramos, p.estado],
+  );
+  const conCobertura = useMemo(
+    () => new Set(p.red.tramos.filter((t) => seguros.has(t.id)).map((t) => t.origen)),
+    [p.red.tramos, seguros],
+  );
+  const ciclistas = useMemo(
+    () => p.red.tramos.filter((t, i) => i % 4 === 1 && seguros.has(t.id) && p.vias[t.id]),
+    [p.red.tramos, seguros, p.vias],
+  );
+  const rutaD = p.ruta?.map((x) => p.vias[x.tramo_id]?.d ?? "").join(" ") ?? "";
+  const minRuta = p.ruta?.length ? aMin(p.ruta[p.ruta.length - 1].salida) - aMin(p.ruta[0].entrada) : 0;
+  const ciclista = useRef<SVGAnimateMotionElement>(null);
+  const verCiclista = animar && hayRuta && p.minutoBici === null;
+
+  useEffect(() => {
+    if (!verCiclista) return;
+    const id = window.setTimeout(() => ciclista.current?.beginElement(), ((p.ruta?.length ?? 0) * 0.25 + 0.4) * 1000);
+    return () => window.clearTimeout(id);
+  }, [verCiclista, p.rutaKey]);
 
   useLayoutEffect(() => {
     const pasos = p.ruta;
@@ -176,6 +202,15 @@ export function MapaCanvas(p: Props) {
         <filter id="sombra-pin" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" floodColor="#193a27" floodOpacity="0.35" />
         </filter>
+        <radialGradient id="br-cobertura-ok">
+          <stop offset="0%" stopColor={c.noche ? c.ciclo : MARCA.bosque600} stopOpacity={c.noche ? 0.3 : 0.24} />
+          <stop offset="65%" stopColor={c.noche ? c.ciclo : MARCA.bosque600} stopOpacity={c.noche ? 0.1 : 0.08} />
+          <stop offset="100%" stopColor={c.noche ? c.ciclo : MARCA.bosque600} stopOpacity={0} />
+        </radialGradient>
+        <radialGradient id="br-cobertura-no">
+          <stop offset="0%" stopColor={MARCA.bloqueado} stopOpacity={0.2} />
+          <stop offset="100%" stopColor={MARCA.bloqueado} stopOpacity={0} />
+        </radialGradient>
       </defs>
 
       <g>
@@ -211,6 +246,32 @@ export function MapaCanvas(p: Props) {
           </g>
         ))}
       </g>
+
+      {p.vivo && p.radioCobertura && (
+        <g pointerEvents="none" opacity={hayRuta ? 0.5 : 1} style={{ transition: "opacity 300ms" }}>
+          {p.red.nodos.map((n, i) => {
+            const ok = conCobertura.has(n.id);
+            return (
+              <g key={`cob${n.id}`}>
+                <circle cx={n.x} cy={n.y} r={ok ? p.radioCobertura : p.radioCobertura! * 0.55} fill={`url(#br-cobertura-${ok ? "ok" : "no"})`} />
+                {animar && ok && (
+                  <circle
+                    cx={n.x}
+                    cy={n.y}
+                    r={p.radioCobertura}
+                    fill="none"
+                    stroke={c.noche ? c.ciclo : MARCA.bosque600}
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    className="onda-cobertura"
+                    style={{ animationDelay: `${-((i * 0.45) % 3.6)}s` }}
+                  />
+                )}
+              </g>
+            );
+          })}
+        </g>
+      )}
 
       <g opacity={tenue} style={{ transition: "opacity 300ms" }}>
         {p.red.tramos.map((t) => {
@@ -307,6 +368,30 @@ export function MapaCanvas(p: Props) {
             );
           })}
 
+        {animar &&
+          !p.capas.trafico &&
+          !p.capas.calor &&
+          p.red.tramos.map((t) => {
+            const v = p.vias[t.id];
+            if (!v || !seguros.has(t.id)) return null;
+            const periodo = 22 * Math.max(1, k * 0.8);
+            return (
+              <path
+                key={`fl${t.id}`}
+                d={v.d}
+                fill="none"
+                stroke={c.noche ? c.texto : MARCA.bosque600}
+                strokeOpacity={0.55}
+                strokeWidth={Math.max(2.4, 1.6 * k)}
+                strokeDasharray={`0.1 ${periodo}`}
+                strokeLinecap="round"
+                pointerEvents="none"
+                className="flujo-via"
+                style={{ ["--periodo" as string]: `${periodo}px`, ["--dur" as string]: `${0.6 + 0.35 * t.tiempo_base_min}s` }}
+              />
+            );
+          })}
+
         {cerca &&
           p.red.tramos.map((t) => {
             const v = p.vias[t.id];
@@ -340,6 +425,24 @@ export function MapaCanvas(p: Props) {
             );
           })}
       </g>
+
+      {animar &&
+        ciclistas.map((t, i) => {
+          const dur = 3 + t.tiempo_base_min * 1.4;
+          return (
+            <g key={`cic${t.id}`} pointerEvents="none" opacity={hayRuta ? 0.45 : 0.95} style={{ transition: "opacity 300ms" }}>
+              <animateMotion dur={`${dur}s`} repeatCount="indefinite" path={p.vias[t.id].d} begin={`${-((i * 1.3) % dur)}s`} />
+              <g transform={`scale(${k})`}>
+                <circle r={8.5} fill={MARCA.bosque600} stroke="#ffffff" strokeWidth={1.8} />
+                <g fill="none" stroke="#ffffff" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx={-3.2} cy={1.8} r={2.2} />
+                  <circle cx={3.2} cy={1.8} r={2.2} />
+                  <path d="M -3.2 1.8 L -1 -1.9 L 2 -1.9 L 3.2 1.8 M -1 -1.9 L 0.5 1.8 L 2 -1.9" />
+                </g>
+              </g>
+            </g>
+          );
+        })}
 
       {p.capas.seguridad && (
         <g pointerEvents="none">
@@ -445,6 +548,28 @@ export function MapaCanvas(p: Props) {
               />
             );
           })}
+        {animar && hayRuta && (
+          <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: durRuta, duration: 0.4 }}>
+            {p.ruta?.map((x, i) => {
+              const v = p.vias[x.tramo_id];
+              if (!v) return null;
+              const periodo = 18 * Math.max(1, k * 0.8);
+              return (
+                <path
+                  key={`rf-${x.tramo_id}-${i}`}
+                  d={v.d}
+                  fill="none"
+                  stroke={MARCA.rueda100}
+                  strokeWidth={Math.max(3, 2.2 * k)}
+                  strokeDasharray={`0.1 ${periodo}`}
+                  strokeLinecap="round"
+                  className="flujo-via"
+                  style={{ ["--periodo" as string]: `${periodo}px`, ["--dur" as string]: "0.9s" }}
+                />
+              );
+            })}
+          </motion.g>
+        )}
       </g>
 
       {p.tramoResaltado && p.vias[p.tramoResaltado] && (
@@ -533,6 +658,8 @@ export function MapaCanvas(p: Props) {
           const hov = n.id === nodoHover;
           const clave = esO || esD || sel;
           const verNombre = clave || hov || k < 1.15;
+          const ok = conCobertura.has(n.id);
+          const sep = p.vivo ? (esD ? 22 : 16) : esD ? 17 : 11;
           return (
             <g
               key={n.id}
@@ -545,9 +672,11 @@ export function MapaCanvas(p: Props) {
               }}
               onPointerEnter={() => setNodoHover(n.id)}
               onPointerLeave={() => setNodoHover((h) => (h === n.id ? null : h))}
+              onFocus={() => setNodoHover(n.id)}
+              onBlur={() => setNodoHover((h) => (h === n.id ? null : h))}
               role="button"
               tabIndex={0}
-              aria-label={`${n.nombre}${esO ? ", origen" : ""}${esD ? ", destino" : ""}`}
+              aria-label={`${n.nombre}${esO ? ", origen" : ""}${esD ? ", destino" : ""}${p.vivo && !ok ? ", sin salidas seguras a esta hora" : ""}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -555,9 +684,50 @@ export function MapaCanvas(p: Props) {
                 }
               }}
             >
-              <circle r={16} fill="transparent" />
-              {sel && <circle r={14} fill={c.noche ? "#2c4a37" : MARCA.bosque100} />}
-              {esD ? (
+              <circle r={p.vivo ? 20 : 16} fill="transparent" />
+              {sel && <circle r={p.vivo ? 19 : 14} fill={c.noche ? "#2c4a37" : MARCA.bosque100} />}
+              {p.vivo && esD ? (
+                <motion.g
+                  filter="url(#sombra-pin)"
+                  initial={reducir ? false : { y: -16, opacity: 0, scale: 1.25 }}
+                  animate={{ y: 0, opacity: 1, scale: hov ? 1.4 : 1.25 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 16 }}
+                  style={{ transformOrigin: "50% 100%" }}
+                >
+                  <path d={PIN} fill={MARCA.bosque} stroke={c.noche ? "#ede8dc" : "#ffffff"} strokeWidth={1.4} />
+                  <path d="M -8.6 -27.2 A 9 9 0 0 1 8.6 -27.2" fill="none" stroke={MARCA.rueda} strokeWidth={3.2} strokeLinecap="round" />
+                  <circle cy={-22} r={4.4} fill="#ffffff" />
+                </motion.g>
+              ) : p.vivo && esO ? (
+                <g>
+                  {animar && <circle r={11} fill={MARCA.bosque} className="pulso-vivo" />}
+                  <motion.g
+                    filter="url(#sombra-pin)"
+                    animate={{ scale: hov ? 1.25 : 1 }}
+                    transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 18 }}
+                  >
+                    <circle r={11} fill="#ffffff" stroke={MARCA.bosque} strokeWidth={5} />
+                  </motion.g>
+                </g>
+              ) : p.vivo && !esO && !esD ? (
+                <motion.g
+                  filter="url(#sombra-pin)"
+                  animate={{ scale: hov || sel ? 1.3 : 1 }}
+                  transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 18 }}
+                >
+                  {ok ? (
+                    <>
+                      <circle r={10} fill="#ffffff" stroke={c.noche ? c.ciclo : MARCA.salvia} strokeWidth={2.5} />
+                      <circle r={4.2} fill={c.noche ? c.ciclo : MARCA.bosque600} />
+                    </>
+                  ) : (
+                    <>
+                      <circle r={10} fill={MARCA.bloqueado} stroke="#ffffff" strokeWidth={2} />
+                      <rect x={-5} y={-1.4} width={10} height={2.8} rx={1} fill="#ffffff" />
+                    </>
+                  )}
+                </motion.g>
+              ) : esD ? (
                 <motion.g
                   filter="url(#sombra-pin)"
                   initial={reducir ? false : { y: -16, opacity: 0 }}
@@ -577,9 +747,9 @@ export function MapaCanvas(p: Props) {
               )}
               {verNombre && (
                 <text
-                  x={esD ? 17 : 11}
-                  y={esD ? -20 : 4}
-                  fontSize={clave ? 13 : 12}
+                  x={sep}
+                  y={esD ? (p.vivo ? -26 : -20) : 4.5}
+                  fontSize={p.vivo ? (clave || hov ? 14 : 12.5) : clave ? 13 : 12}
                   fontWeight={clave ? 700 : 600}
                   fill={c.texto}
                   stroke={c.halo}
@@ -598,15 +768,44 @@ export function MapaCanvas(p: Props) {
 
       {bici && (
         <g transform={`translate(${bici.x} ${bici.y}) scale(${k})`} pointerEvents="none">
-          <circle r={17} fill={MARCA.rueda} opacity={0.22} />
-          <circle r={11.5} fill={MARCA.rueda} stroke="#ffffff" strokeWidth={2.5} filter="url(#sombra-pin)" />
-          <g fill="none" stroke="#ffffff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx={-4.2} cy={2.4} r={3} />
-            <circle cx={4.2} cy={2.4} r={3} />
-            <path d="M -4.2 2.4 L -1.4 -2.6 L 2.6 -2.6 L 4.2 2.4 M -1.4 -2.6 L 0.6 2.4 L 2.6 -2.6 M -2.4 -4.4 L -0.4 -4.4" />
-          </g>
+          <IconoBici />
         </g>
       )}
+
+      {verCiclista && (
+        <motion.g
+          key={`ciclista-${p.rutaKey}`}
+          pointerEvents="none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: durRuta, duration: 0.3 }}
+        >
+          <animateMotion
+            ref={ciclista}
+            dur={`${Math.min(12, Math.max(4, minRuta * 0.5))}s`}
+            repeatCount="indefinite"
+            path={rutaD}
+            begin="indefinite"
+          />
+          <g transform={`scale(${k})`}>
+            <IconoBici />
+          </g>
+        </motion.g>
+      )}
     </svg>
+  );
+}
+
+function IconoBici() {
+  return (
+    <>
+      <circle r={17} fill={MARCA.rueda} opacity={0.22} />
+      <circle r={11.5} fill={MARCA.rueda} stroke="#ffffff" strokeWidth={2.5} filter="url(#sombra-pin)" />
+      <g fill="none" stroke="#ffffff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx={-4.2} cy={2.4} r={3} />
+        <circle cx={4.2} cy={2.4} r={3} />
+        <path d="M -4.2 2.4 L -1.4 -2.6 L 2.6 -2.6 L 4.2 2.4 M -1.4 -2.6 L 0.6 2.4 L 2.6 -2.6 M -2.4 -4.4 L -0.4 -4.4" />
+      </g>
+    </>
   );
 }
