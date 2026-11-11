@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
 import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
-import { etiquetaViaje, plural, resumenViajes } from "../lib/texto";
+import { etiquetaViaje, plural, restriccionesDelEscenario, resumenViajes } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
 import { ControlHora } from "../components/ControlHora";
 import { Resultado, type PuntoRuta } from "../components/Resultado";
@@ -104,6 +104,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   }
 
   const r = resultado?.recorrido ?? null;
+  const restricciones = useMemo(() => restriccionesDelEscenario(red), [red]);
   const resumen = useMemo(
     () => resumenViajes(red.viajes, (id) => red.nodos.find((n) => n.id === id)?.nombre ?? id),
     [red.viajes, red.nodos],
@@ -356,6 +357,37 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
           <div className="border-t border-line px-5 py-3.5">
             <LeyendaMapa modo="consulta" />
           </div>
+
+          <details className="group border-t border-line px-5 py-3.5" open>
+            <summary className="cursor-pointer list-none text-[14px] font-bold text-navy">
+              <span className="mr-1.5 inline-block transition-transform group-open:rotate-90" aria-hidden="true">
+                ›
+              </span>
+              Tramos con restricciones en este escenario ({restricciones.length})
+            </summary>
+            {restricciones.length > 0 ? (
+              <table className="mt-3 w-full text-left text-[13px]">
+                <thead>
+                  <tr className="text-xs font-bold uppercase tracking-wide text-muted">
+                    <th className="py-1.5 pr-4 font-bold">Tramo</th>
+                    <th className="py-1.5 pr-4 font-bold">Sentido</th>
+                    <th className="py-1.5 font-bold">Motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {restricciones.map((f) => (
+                    <tr key={`${f.tramo}-${f.motivo}`} className="border-t border-line">
+                      <td className="tnum py-2 pr-4 font-bold text-navy">{f.tramo}</td>
+                      <td className="tnum py-2 pr-4 text-ink">{f.sentido}</td>
+                      <td className="py-2 text-ink">{f.motivo}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="mt-2 text-[13px] text-muted">Ningún tramo tiene restricciones en este escenario.</p>
+            )}
+          </details>
         </Card>
       </div>
     </div>

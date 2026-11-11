@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { Metricas, Viaje } from "./lib/api";
-import { ETIQUETA_OPCION, etiquetaViaje, explicarLote, nivelCongestion, resumenViajes } from "./lib/texto";
+import type { Metricas, Red, Tramo, Viaje } from "./lib/api";
+import {
+  ETIQUETA_OPCION,
+  etiquetaViaje,
+  explicarLote,
+  nivelCongestion,
+  restriccionesDelEscenario,
+  resumenViajes,
+} from "./lib/texto";
 
 describe("nivelCongestion", () => {
   it("devuelve 'Sin congestión' para 0", () => {
@@ -123,5 +130,49 @@ describe("viajes del escenario", () => {
     expect(etiquetaViaje(iguales[1], iguales)).toBe("V002 · bici pública");
     const distintos = [v("V001", "propia"), v("V002", "publica", { salida_desde: "18:00", salida_hasta: "18:10" })];
     expect(etiquetaViaje(distintos[1], distintos)).toBe("V002 · N01 → N05 · 18:00–18:10 · bici pública");
+  });
+});
+
+describe("restriccionesDelEscenario", () => {
+  const tramo = (id: string, origen: string, destino: string, extra: Partial<Tramo> = {}): Tramo => ({
+    id,
+    origen,
+    destino,
+    distancia_m: 400,
+    tiempo_base_min: 2,
+    capacidad_bicis: 3,
+    iluminado: true,
+    habilitado_bicicletas: true,
+    tipo: "ciclorruta",
+    ...extra,
+  });
+  const red = {
+    config: { inicio: "15:00", fin: "21:00", intervalo_min: 5, inicio_noche: "18:00", fin_noche: "21:00" },
+    tramos: [
+      tramo("T01", "N01", "N02"),
+      tramo("T02", "N02", "N03", { iluminado: false }),
+      tramo("T18", "N08", "N03"),
+      tramo("T27", "N02", "N04"),
+      tramo("T28", "N01", "N05", { habilitado_bicicletas: false, tipo: "via_no_habilitada" }),
+    ],
+    restricciones: [
+      { id: "R03", tramo_id: "T18", inicio: "18:00", fin: "21:00", motivo: "riesgo_seguridad_personal" },
+      { id: "R01", tramo_id: "T27", inicio: "15:00", fin: "21:00", motivo: "riesgo_vial_alto" },
+      { id: "R02", tramo_id: "T28", inicio: "15:00", fin: "21:00", motivo: "no_habilitado_bicicletas" },
+    ],
+  } as unknown as Red;
+
+  it("lista los tramos con restricciones como el prototipo de ias (escenario 04)", () => {
+    expect(restriccionesDelEscenario(red)).toEqual([
+      { tramo: "T02", sentido: "N02 → N03", motivo: "Sin iluminación de 18:00 a 21:00" },
+      { tramo: "T18", sentido: "N08 → N03", motivo: "Riesgo de seguridad personal de 18:00 a 21:00" },
+      { tramo: "T27", sentido: "N02 → N04", motivo: "Riesgo vial alto de 15:00 a 21:00" },
+      { tramo: "T28", sentido: "N01 → N05", motivo: "No habilitado para bicicletas" },
+    ]);
+  });
+
+  it("incluye un tramo no habilitado aunque no tenga restricción", () => {
+    const sinR = { ...red, restricciones: [] } as Red;
+    expect(restriccionesDelEscenario(sinR).map((f) => f.tramo)).toEqual(["T02", "T28"]);
   });
 });
