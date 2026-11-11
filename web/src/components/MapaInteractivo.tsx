@@ -20,6 +20,7 @@ import { motivoBloqueo } from "../lib/texto";
 import { aHora, aMin } from "../lib/time";
 import { MapaCanvas, type Capas } from "./MapaCanvas";
 import { AnimatedNumber } from "./ui";
+import { parqueaderoMasCercano, PARQUEADEROS } from "../lib/parqueaderos";
 import { VistaCalle } from "./VistaCalle";
 
 const PESO = 1000;
@@ -279,6 +280,9 @@ export function MapaInteractivo(p: Props) {
     vb && tam.w ? { left: ((x - vb.x) / vb.w) * tam.w, top: ((y - vb.y) / vb.h) * tam.h } : null;
 
   const nodo = nodoSel ? red.nodos.find((n) => n.id === nodoSel) : undefined;
+  const parqueaderos = useMemo(() => new Set(PARQUEADEROS.map((x) => x.nodo)), []);
+  const parqNodo = p.modo === "usuario" && nodo ? PARQUEADEROS.find((x) => x.nodo === nodo.id) : undefined;
+  const cercano = p.modo === "usuario" && nodo && !parqNodo ? parqueaderoMasCercano(nodo.id, red.tramos) : null;
   const posNodo = nodo ? enPantalla(nodo.x, nodo.y) : null;
   const tHover = hover && hover !== tramoSel ? tramos.get(hover) : undefined;
   const posHover = tHover && vias[tHover.id] ? enPantalla(vias[tHover.id].medio.x, vias[tHover.id].medio.y) : null;
@@ -362,6 +366,7 @@ export function MapaInteractivo(p: Props) {
           calorMax={p.calorMax}
           vivo={vivo}
           radioCobertura={240 / mpu}
+          parqueaderos={parqueaderos}
         />
       )}
 
@@ -429,7 +434,7 @@ export function MapaInteractivo(p: Props) {
 
       {posNodo && nodo && (
         <div
-          className="absolute z-20 w-64 -translate-x-1/2 -translate-y-[calc(100%+28px)] rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgb(25_58_39/0.2)]"
+          className={`absolute z-20 w-64 -translate-x-1/2 ${posNodo.top < 260 ? "translate-y-[28px]" : "-translate-y-[calc(100%+28px)]"} rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgb(25_58_39/0.2)]`}
           style={{ left: posNodo.left, top: posNodo.top }}
         >
           <div className="flex items-start justify-between gap-2">
@@ -439,6 +444,12 @@ export function MapaInteractivo(p: Props) {
                 Punto {nodo.id} · {red.tramos.filter((t) => t.origen === nodo.id).length} salidas ·{" "}
                 {red.tramos.filter((t) => t.destino === nodo.id).length} llegadas
               </p>
+              {parqNodo && (
+                <p className="mt-2 rounded-lg bg-bosque-100 px-2.5 py-1.5 text-[12.5px] text-bosque">
+                  <strong className="font-bold">Bici-parqueadero</strong> · {parqNodo.cupos} cupos · {parqNodo.horario}
+                  <span className="mt-0.5 block text-[11px] text-muted">Dato de ejemplo, como el resto de la red.</span>
+                </p>
+              )}
             </div>
             <button
               type="button"
@@ -473,9 +484,25 @@ export function MapaInteractivo(p: Props) {
               >
                 Ir hasta aquí
               </button>
+              {cercano && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    p.onOrigen?.(nodo.id);
+                    p.onDestino?.(cercano.parqueadero.nodo);
+                    setNodoSel(null);
+                  }}
+                  className="col-span-2 inline-flex items-center justify-center gap-2 rounded-full bg-bosque-100 px-2 py-2 text-[13px] font-bold text-bosque hover:bg-[#d4e3d8]"
+                >
+                  <span className="grid size-5 place-items-center rounded-md bg-bosque text-[11px] font-extrabold text-white" aria-hidden="true">
+                    P
+                  </span>
+                  Ir al parqueadero más cercano · {formatoDistancia(cercano.metros)}
+                </button>
+              )}
             </div>
           )}
-          <span className="absolute -bottom-1.5 left-1/2 size-3 -translate-x-1/2 rotate-45 bg-white" aria-hidden="true" />
+          <span className={`absolute ${posNodo.top < 260 ? "-top-1.5" : "-bottom-1.5"} left-1/2 size-3 -translate-x-1/2 rotate-45 bg-white`} aria-hidden="true" />
         </div>
       )}
 

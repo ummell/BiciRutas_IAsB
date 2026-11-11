@@ -39,6 +39,7 @@ interface Props {
   calorMax?: number;
   vivo?: boolean;
   radioCobertura?: number;
+  parqueaderos?: Set<string>;
 }
 
 function colorSobrecarga(v: number, max: number): string {
@@ -657,9 +658,10 @@ export function MapaCanvas(p: Props) {
           const sel = n.id === p.nodoSel;
           const hov = n.id === nodoHover;
           const clave = esO || esD || sel;
-          const verNombre = clave || hov || k < 1.15;
+          const parq = Boolean(p.vivo && p.parqueaderos?.has(n.id));
+          const verNombre = clave || hov || parq || k < 1.15;
           const ok = conCobertura.has(n.id);
-          const sep = p.vivo ? (esD ? 22 : 16) : esD ? 17 : 11;
+          const sep = p.vivo ? (esD ? 22 : parq && !esO ? 19 : 16) : esD ? 17 : 11;
           return (
             <g
               key={n.id}
@@ -676,7 +678,7 @@ export function MapaCanvas(p: Props) {
               onBlur={() => setNodoHover((h) => (h === n.id ? null : h))}
               role="button"
               tabIndex={0}
-              aria-label={`${n.nombre}${esO ? ", origen" : ""}${esD ? ", destino" : ""}${p.vivo && !ok ? ", sin salidas seguras a esta hora" : ""}`}
+              aria-label={`${n.nombre}${parq ? ", bici-parqueadero" : ""}${esO ? ", origen" : ""}${esD ? ", destino" : ""}${p.vivo && !ok ? ", sin salidas seguras a esta hora" : ""}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -709,6 +711,18 @@ export function MapaCanvas(p: Props) {
                     <circle r={11} fill="#ffffff" stroke={MARCA.bosque} strokeWidth={5} />
                   </motion.g>
                 </g>
+              ) : parq && !esO && !esD ? (
+                <motion.g
+                  filter="url(#sombra-pin)"
+                  animate={{ scale: hov || sel ? 1.3 : 1 }}
+                  transition={reducir ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 18 }}
+                >
+                  <rect x={-13} y={-13} width={26} height={26} rx={7} fill={MARCA.bosque} stroke="#ffffff" strokeWidth={2.5} />
+                  <text textAnchor="middle" dy="0.36em" fontSize={15} fontWeight={800} fill="#ffffff" pointerEvents="none">
+                    P
+                  </text>
+                  <circle cx={10} cy={-10} r={4.5} fill={ok ? MARCA.bosque600 : MARCA.bloqueado} stroke="#ffffff" strokeWidth={1.6} />
+                </motion.g>
               ) : p.vivo && !esO && !esD ? (
                 <motion.g
                   filter="url(#sombra-pin)"
@@ -744,6 +758,14 @@ export function MapaCanvas(p: Props) {
                 </g>
               ) : (
                 <circle r={4.6} fill={c.punto} stroke={c.noche ? c.tierra : "#ffffff"} strokeWidth={2} />
+              )}
+              {parq && (esO || esD) && (
+                <g transform={esD ? "translate(-18 -30)" : "translate(12 -12)"} pointerEvents="none">
+                  <rect x={-7.5} y={-7.5} width={15} height={15} rx={4} fill={MARCA.bosque} stroke="#ffffff" strokeWidth={1.6} />
+                  <text textAnchor="middle" dy="0.36em" fontSize={10} fontWeight={800} fill="#ffffff">
+                    P
+                  </text>
+                </g>
               )}
               {verNombre && (
                 <text

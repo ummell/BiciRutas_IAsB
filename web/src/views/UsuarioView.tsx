@@ -5,6 +5,7 @@ import { MapaInteractivo } from "../components/MapaInteractivo";
 import { ErrorAviso, EstadoChip } from "../components/ui";
 import { api, ApiError, type ConsultaOut, type Recorrido, type Red } from "../lib/api";
 import { formatoDistancia } from "../lib/mapa";
+import { PARQUEADEROS } from "../lib/parqueaderos";
 import { ETIQUETA_OPCION, nivelCongestion } from "../lib/texto";
 import { aHora, aMin } from "../lib/time";
 
@@ -72,6 +73,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
       {red.nodos.map((n) => (
         <option key={n.id} value={n.id}>
           {n.nombre}
+          {PARQUEADEROS.some((x) => x.nodo === n.id) ? " · bici-parqueadero" : ""}
         </option>
       ))}
     </select>
