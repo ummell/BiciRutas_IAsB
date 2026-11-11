@@ -1,4 +1,4 @@
-import type { Estado, EtiquetaOpcion, Metricas, Red, Viaje } from "./api";
+import type { Asignacion, Estado, EtiquetaOpcion, Metricas, MotivoSinRuta, Recorrido, Red, Viaje } from "./api";
 
 const MOTIVOS: Record<string, string> = {
   cierre_por_obras: "Cierre por obras",
@@ -48,17 +48,21 @@ export const ETIQUETA_OPCION: Record<EtiquetaOpcion, string> = {
 
 export const veces = (n: number) => `${n.toFixed(1).replace(".", ",")}×`;
 
-export function explicarLote(ref: Metricas, eq: Metricas): { sobrecarga: string; costos: string[] } {
+export function explicarLote(
+  ref: Metricas,
+  eq: Metricas,
+  { maxPuntualidad = false }: { maxPuntualidad?: boolean } = {},
+): { sobrecarga: string; costos: string[] } {
   const r = ref.sobrecarga_acumulada_bici_intervalo;
   const e = eq.sobrecarga_acumulada_bici_intervalo;
   const sinViajes = eq.viajes_a_tiempo + eq.viajes_tarde === 0 && eq.viajes_sin_ruta_segura > 0;
   const sobrecarga = sinViajes
     ? "Ningún viaje tiene ruta segura, así que no hay carga que repartir: 0 es el resultado esperado."
     : r === 0 && e === 0
-      ? "Ningún tramo supera su capacidad, ni con ni sin estrategia."
+      ? "Ningún tramo supera su capacidad, ni con estrategia ni en la referencia."
       : e === 0
         ? "0 significa que, con la estrategia, ningún tramo supera su capacidad en ningún intervalo de 5 min."
-        : `Quedan ${e} bici-intervalos por encima de la capacidad; sin estrategia eran ${r}.`;
+        : `Quedan ${e} bici-intervalos por encima de la capacidad; en la referencia eran ${r}.`;
 
   const costos: string[] = [];
   if (eq.pares_saturados > ref.pares_saturados) {
@@ -67,9 +71,17 @@ export function explicarLote(ref: Metricas, eq: Metricas): { sobrecarga: string;
     );
   }
   const tarde = eq.viajes_tarde - ref.viajes_tarde;
+  const extra = eq.minutos_totales_viaje - ref.minutos_totales_viaje;
+  if (tarde > 0 && extra > 0) {
+    costos.push(
+      `Los minutos de viaje suben de ${ref.minutos_totales_viaje} a ${eq.minutos_totales_viaje} (+${extra}) porque los viajes desviados toman corredores más largos que la ruta más rápida.`,
+    );
+  }
   if (tarde > 0) {
     costos.push(
-      `${plural(tarde, "viaje más llega", "viajes más llegan")} tarde (${eq.minutos_totales_tardanza} min de tardanza en total): el reto prioriza bajar la congestión del conjunto. Mueve «Qué pesa más» hacia la puntualidad para reducirlos.`,
+      maxPuntualidad
+        ? `${plural(tarde, "viaje más llega", "viajes más llegan")} tarde (${eq.minutos_totales_tardanza} min de tardanza en total). Incluso con el control en «más puntualidad», es lo mínimo que logra la estrategia sin volver a saturar los tramos.`
+        : `${plural(tarde, "viaje más llega", "viajes más llegan")} tarde (${eq.minutos_totales_tardanza} min de tardanza en total): el reto prioriza bajar la congestión del conjunto. Mueve «Qué pesa más» hacia la puntualidad para reducirlos.`,
     );
   } else if (eq.minutos_totales_viaje > ref.minutos_totales_viaje && eq.viajes_tarde === 0) {
     costos.push(
@@ -97,12 +109,6 @@ const mismoViaje = (a: Viaje, b: Viaje) =>
   a.llegada_limite === b.llegada_limite;
 
 const iguales = (viajes: Viaje[]) => viajes.length > 1 && viajes.every((v) => mismoViaje(v, viajes[0]));
-
-export function resumenViajes(viajes: Viaje[], nombre: (id: string) => string): string | null {
-  if (!iguales(viajes)) return null;
-  const v = viajes[0];
-  return `Los ${viajes.length} viajes de este escenario van de ${nombre(v.origen)} a ${nombre(v.destino)}, salen entre ${v.salida_desde} y ${v.salida_hasta} y deben llegar antes de las ${v.llegada_limite}. Solo cambia la modalidad: el escenario prueba qué pasa cuando muchos ciclistas piden la misma ruta.`;
-}
 
 export function etiquetaViaje(v: Viaje, viajes: Viaje[]): string {
   const modalidad = MODALIDAD[v.modalidad] ?? v.modalidad;
@@ -142,4 +148,62 @@ export function restriccionesDelEscenario(red: Pick<Red, "config" | "tramos" | "
     }
   }
   return filas.sort((a, b) => a.tramo.localeCompare(b.tramo));
+}
+
+export type Cambio = "igual" | "hora" | "ruta" | "ruta_hora";
+
+export const ETIQUETA_CAMBIO: Record<Cambio, string> = {
+  igual: "Igual",
+  hora: "Otra hora",
+  ruta: "Otra ruta",
+  ruta_hora: "Otra ruta y hora",
+};
+
+const ruta = (r: Recorrido) => r.pasos.map((p) => p.tramo_id).join(",");
+
+export function tipoCambio(antes: Recorrido | null, despues: Recorrido | null): Cambio | null {
+  if (!antes || !despues) return null;
+  const otraRuta = ruta(antes) !== ruta(despues);
+  const otraHora = antes.salida !== despues.salida;
+  if (otraRuta && otraHora) return "ruta_hora";
+  if (otraRuta) return "ruta";
+  if (otraHora) return "hora";
+  return "igual";
+}
+
+export function notaLote(individual: Recorrido | null, lote: Asignacion | undefined): string | null {
+  const r = lote?.recorrido;
+  const cambio = tipoCambio(individual, r ?? null);
+  if (!lote || !r || !cambio) return null;
+  if (cambio === "igual") return `En el reparto del lote, ${lote.viaje_id} mantiene esta misma ruta y hora.`;
+  const por = cambio === "hora" ? "la misma ruta" : "otra ruta";
+  const llega = r.tardanza_min > 0 ? `llega ${r.tardanza_min} min tarde (${r.llegada})` : `llega a tiempo (${r.llegada})`;
+  return `En el reparto del lote, ${lote.viaje_id} sale a las ${r.salida} por ${por} y ${llega}, para no saturar los tramos.`;
+}
+
+export function textoSinRuta(motivo: MotivoSinRuta | undefined, fin: string): string {
+  if (motivo === "horizonte")
+    return `Ninguna ruta segura llega antes de las ${fin}, cuando termina la simulación. Prueba una salida más temprana.`;
+  if (motivo === "sin_acceso")
+    return "Los tramos de acceso a ese destino están bloqueados durante toda la simulación. Cambiar la hora de salida no ayuda.";
+  return "Todos los recorridos posibles usan algún tramo bloqueado a esa hora. Otra hora de salida sí puede tener ruta segura.";
+}
+
+/** For each level, the index of another level with less overload and less lateness (at least one strictly), or null. */
+export function planDominante(niveles: Metricas[]): (number | null)[] {
+  return niveles.map((a, i) => {
+    const j = niveles.findIndex(
+      (b, k) =>
+        k !== i &&
+        b.sobrecarga_acumulada_bici_intervalo <= a.sobrecarga_acumulada_bici_intervalo &&
+        b.minutos_totales_tardanza <= a.minutos_totales_tardanza &&
+        (b.sobrecarga_acumulada_bici_intervalo < a.sobrecarga_acumulada_bici_intervalo ||
+          b.minutos_totales_tardanza < a.minutos_totales_tardanza),
+    );
+    return j === -1 ? null : j;
+  });
+}
+
+export function textoAlternativas(rutas: number, salidas: number): string {
+  return `${plural(rutas, "ruta segura", "rutas seguras")} · ${plural(salidas, "hora de salida evaluada", "horas de salida evaluadas")}`;
 }

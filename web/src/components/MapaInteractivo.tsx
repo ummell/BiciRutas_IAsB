@@ -1,6 +1,6 @@
 import { animate, AnimatePresence, motion, useReducedMotion, type AnimationPlaybackControls } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { Paso, Red } from "../lib/api";
+import { PESO_PLAN, type Paso, type Red } from "../lib/api";
 import { useEstadoTramos, useLote } from "../lib/hooks";
 import {
   cajaDe,
@@ -23,7 +23,6 @@ import { AnimatedNumber } from "./ui";
 import { parqueaderoMasCercano, PARQUEADEROS } from "../lib/parqueaderos";
 import { VistaCalle } from "./VistaCalle";
 
-const PESO = 1000;
 
 interface Props {
   escenario: string;
@@ -189,7 +188,7 @@ export function MapaInteractivo(p: Props) {
     () => Object.fromEntries((estadoQ.data?.tramos ?? []).map((t) => [t.tramo_id, t])),
     [estadoQ.data],
   );
-  const loteQ = useLote(p.escenario, PESO, capas.trafico || tramoSel !== null);
+  const loteQ = useLote(p.escenario, PESO_PLAN, capas.trafico || tramoSel !== null);
   const cargaHora = useMemo(() => {
     const m: Record<string, { total: number; capacidad: number }> = {};
     for (const f of loteQ.data?.equipo.ocupacion ?? []) {

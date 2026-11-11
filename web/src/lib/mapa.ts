@@ -327,3 +327,20 @@ export function escalaBonita(metrosPorPx: number): { metros: number; px: number 
 export function formatoDistancia(m: number): string {
   return m >= 1000 ? `${(m / 1000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} km` : `${m} m`;
 }
+
+/** Splits a long station name into two balanced lines so labels fit between neighbouring stations. */
+export function partirNombre(nombre: string, maximo = 13): string[] {
+  const palabras = nombre.split(" ");
+  if (nombre.length <= maximo || palabras.length < 2) return [nombre];
+  let mejor: string[] = [nombre];
+  let largoMejor = Infinity;
+  for (let i = 1; i < palabras.length; i++) {
+    const lineas = [palabras.slice(0, i).join(" "), palabras.slice(i).join(" ")];
+    const largo = Math.max(lineas[0].length, lineas[1].length);
+    if (largo < largoMejor) {
+      mejor = lineas;
+      largoMejor = largo;
+    }
+  }
+  return mejor;
+}

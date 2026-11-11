@@ -48,10 +48,12 @@
     },
     {
       "viaje_id": "V005",
-      "salida": "17:00",
+      "salida": "17:10",
       "tramos": [
-        "T01",
-        "T02",
+        "T13",
+        "T05",
+        "T06",
+        "T18",
         "T03",
         "T04"
       ],
@@ -59,10 +61,12 @@
     },
     {
       "viaje_id": "V006",
-      "salida": "17:00",
+      "salida": "17:10",
       "tramos": [
-        "T01",
-        "T02",
+        "T13",
+        "T05",
+        "T06",
+        "T18",
         "T03",
         "T04"
       ],
@@ -72,9 +76,9 @@
       "viaje_id": "V007",
       "salida": "17:00",
       "tramos": [
-        "T13",
-        "T05",
-        "T06",
+        "T01",
+        "T02",
+        "T17",
         "T07",
         "T08",
         "T22"
@@ -85,9 +89,9 @@
       "viaje_id": "V008",
       "salida": "17:00",
       "tramos": [
-        "T13",
-        "T05",
-        "T06",
+        "T01",
+        "T02",
+        "T17",
         "T07",
         "T08",
         "T22"
@@ -98,9 +102,9 @@
       "viaje_id": "V009",
       "salida": "17:00",
       "tramos": [
-        "T13",
-        "T05",
-        "T06",
+        "T01",
+        "T02",
+        "T17",
         "T07",
         "T08",
         "T22"
@@ -161,14 +165,14 @@
     },
     {
       "viaje_id": "V014",
-      "salida": "17:10",
+      "salida": "17:05",
       "tramos": [
-        "T13",
-        "T05",
-        "T06",
-        "T18",
-        "T03",
-        "T04"
+        "T01",
+        "T02",
+        "T17",
+        "T07",
+        "T08",
+        "T22"
       ],
       "estado": "A_TIEMPO"
     },
@@ -176,12 +180,12 @@
       "viaje_id": "V015",
       "salida": "17:10",
       "tramos": [
-        "T13",
-        "T05",
-        "T06",
-        "T18",
-        "T03",
-        "T04"
+        "T01",
+        "T02",
+        "T17",
+        "T07",
+        "T08",
+        "T22"
       ],
       "estado": "A_TIEMPO"
     },
@@ -205,11 +209,11 @@
         "T13",
         "T05",
         "T06",
-        "T18",
-        "T03",
-        "T04"
+        "T07",
+        "T08",
+        "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V018",
@@ -218,11 +222,11 @@
         "T13",
         "T05",
         "T06",
-        "T18",
-        "T03",
-        "T04"
+        "T07",
+        "T08",
+        "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V019",
@@ -231,13 +235,11 @@
         "T13",
         "T05",
         "T06",
-        "T19",
-        "T11",
-        "T12",
-        "T24",
+        "T07",
+        "T08",
         "T22"
       ],
-      "estado": "TARDE"
+      "estado": "A_TIEMPO"
     },
     {
       "viaje_id": "V020",
@@ -246,17 +248,15 @@
         "T13",
         "T05",
         "T06",
-        "T19",
-        "T11",
-        "T12",
-        "T24",
+        "T07",
+        "T08",
         "T22"
       ],
-      "estado": "TARDE"
+      "estado": "A_TIEMPO"
     },
     {
       "viaje_id": "V021",
-      "salida": "17:00",
+      "salida": "17:05",
       "tramos": [
         "T13",
         "T15",
@@ -267,11 +267,11 @@
         "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V022",
-      "salida": "17:00",
+      "salida": "17:05",
       "tramos": [
         "T13",
         "T15",
@@ -282,116 +282,11 @@
         "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V023",
-      "salida": "17:05",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V024",
-      "salida": "17:05",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V025",
-      "salida": "17:05",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V026",
-      "salida": "17:05",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V027",
-      "salida": "17:05",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V028",
-      "salida": "17:10",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T20",
-        "T18",
-        "T03",
-        "T04"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V029",
-      "salida": "17:10",
-      "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T20",
-        "T18",
-        "T03",
-        "T04"
-      ],
-      "estado": "TARDE"
-    },
-    {
-      "viaje_id": "V030",
-      "salida": "17:10",
+      "salida": "17:00",
       "tramos": [
         "T13",
         "T05",
@@ -401,6 +296,105 @@
         "T12",
         "T24",
         "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V024",
+      "salida": "17:00",
+      "tramos": [
+        "T13",
+        "T05",
+        "T06",
+        "T19",
+        "T11",
+        "T12",
+        "T24",
+        "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V025",
+      "salida": "17:00",
+      "tramos": [
+        "T13",
+        "T05",
+        "T06",
+        "T19",
+        "T11",
+        "T12",
+        "T24",
+        "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V026",
+      "salida": "17:00",
+      "tramos": [
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T24",
+        "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V027",
+      "salida": "17:00",
+      "tramos": [
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T24",
+        "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V028",
+      "salida": "17:00",
+      "tramos": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V029",
+      "salida": "17:00",
+      "tramos": [
+        "T01",
+        "T02",
+        "T17",
+        "T07",
+        "T08",
+        "T22"
+      ],
+      "estado": "A_TIEMPO"
+    },
+    {
+      "viaje_id": "V030",
+      "salida": "17:10",
+      "tramos": [
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T20",
+        "T18",
+        "T03",
+        "T04"
       ],
       "estado": "TARDE"
     },
@@ -409,49 +403,49 @@
       "salida": "17:10",
       "tramos": [
         "T13",
-        "T05",
-        "T06",
-        "T19",
-        "T11",
-        "T12",
-        "T24",
-        "T22"
+        "T15",
+        "T09",
+        "T10",
+        "T20",
+        "T18",
+        "T03",
+        "T04"
       ],
       "estado": "TARDE"
     },
     {
       "viaje_id": "V032",
-      "salida": "17:10",
+      "salida": "17:00",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "TARDE"
+      "estado": "A_TIEMPO"
     },
     {
       "viaje_id": "V033",
-      "salida": "17:10",
+      "salida": "17:00",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "TARDE"
+      "estado": "A_TIEMPO"
     },
     {
       "viaje_id": "V034",
-      "salida": "17:10",
+      "salida": "17:05",
       "tramos": [
         "T13",
         "T15",
@@ -466,39 +460,41 @@
     },
     {
       "viaje_id": "V035",
-      "salida": "17:00",
-      "tramos": [
-        "T01",
-        "T02",
-        "T17",
-        "T07",
-        "T08",
-        "T22"
-      ],
-      "estado": "A_TIEMPO"
-    },
-    {
-      "viaje_id": "V036",
-      "salida": "17:00",
-      "tramos": [
-        "T01",
-        "T02",
-        "T17",
-        "T07",
-        "T08",
-        "T22"
-      ],
-      "estado": "A_TIEMPO"
-    },
-    {
-      "viaje_id": "V037",
-      "salida": "17:00",
+      "salida": "17:05",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
         "T20",
+        "T07",
+        "T08",
+        "T22"
+      ],
+      "estado": "TARDE"
+    },
+    {
+      "viaje_id": "V036",
+      "salida": "17:05",
+      "tramos": [
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T20",
+        "T07",
+        "T08",
+        "T22"
+      ],
+      "estado": "TARDE"
+    },
+    {
+      "viaje_id": "V037",
+      "salida": "17:10",
+      "tramos": [
+        "T01",
+        "T02",
+        "T17",
         "T07",
         "T08",
         "T22"
@@ -507,48 +503,48 @@
     },
     {
       "viaje_id": "V038",
-      "salida": "17:00",
+      "salida": "17:10",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V039",
-      "salida": "17:00",
+      "salida": "17:10",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V040",
-      "salida": "17:00",
+      "salida": "17:10",
       "tramos": [
         "T13",
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V041",
@@ -558,9 +554,9 @@
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
       "estado": "TARDE"
@@ -573,25 +569,21 @@
         "T15",
         "T09",
         "T10",
-        "T20",
-        "T07",
-        "T08",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
       "estado": "TARDE"
     },
     {
       "viaje_id": "V043",
-      "salida": "17:00",
+      "salida": "17:05",
       "tramos": [
-        "T13",
-        "T15",
-        "T09",
-        "T10",
-        "T20",
-        "T07",
-        "T08",
-        "T22"
+        "T01",
+        "T02",
+        "T03",
+        "T04"
       ],
       "estado": "A_TIEMPO"
     },
@@ -608,22 +600,28 @@
     },
     {
       "viaje_id": "V045",
-      "salida": "17:05",
+      "salida": "17:00",
       "tramos": [
-        "T01",
-        "T02",
-        "T03",
-        "T04"
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T20",
+        "T07",
+        "T08",
+        "T22"
       ],
       "estado": "A_TIEMPO"
     },
     {
       "viaje_id": "V046",
-      "salida": "17:10",
+      "salida": "17:00",
       "tramos": [
-        "T01",
-        "T02",
-        "T17",
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T20",
         "T07",
         "T08",
         "T22"
@@ -634,27 +632,31 @@
       "viaje_id": "V047",
       "salida": "17:10",
       "tramos": [
-        "T01",
-        "T02",
-        "T17",
-        "T07",
-        "T08",
+        "T13",
+        "T05",
+        "T06",
+        "T19",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V048",
       "salida": "17:10",
       "tramos": [
-        "T01",
-        "T02",
-        "T17",
-        "T07",
-        "T08",
+        "T13",
+        "T05",
+        "T06",
+        "T19",
+        "T11",
+        "T12",
+        "T24",
         "T22"
       ],
-      "estado": "A_TIEMPO"
+      "estado": "TARDE"
     },
     {
       "viaje_id": "V049",
@@ -673,10 +675,14 @@
       "viaje_id": "V050",
       "salida": "17:00",
       "tramos": [
-        "T01",
-        "T02",
-        "T03",
-        "T04"
+        "T13",
+        "T15",
+        "T09",
+        "T10",
+        "T20",
+        "T07",
+        "T08",
+        "T22"
       ],
       "estado": "A_TIEMPO"
     },

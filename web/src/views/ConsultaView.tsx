@@ -1,14 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
-import { useEstadoTramos } from "../lib/hooks";
+import { api, ApiError, PESO_PLAN, type ConsultaOut, type Recorrido, type Red } from "../lib/api";
+import { useEstadoTramos, useLote } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
-import { etiquetaViaje, plural, restriccionesDelEscenario, resumenViajes } from "../lib/texto";
+import { etiquetaViaje, notaLote, plural, restriccionesDelEscenario } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
-import { ControlHora } from "../components/ControlHora";
 import { Resultado, type PuntoRuta } from "../components/Resultado";
-import { Campo, Card, CLASE_INPUT, ErrorAviso, Segmentado, SelectorHora } from "../components/ui";
+import { Campo, Card, CLASE_INPUT, ErrorAviso, EstadoCalculo, Segmentado, SelectorHora } from "../components/ui";
 
 const FLEX_BASE = [0, 15, 30, 60];
 
@@ -26,19 +25,22 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   const [resultado, setResultado] = useState<ConsultaOut | null>(null);
   const [version, setVersion] = useState(0);
   const [viajeSel, setViajeSel] = useState("");
-  const [calcular, setCalcular] = useState(false);
+  const [verLote, setVerLote] = useState(false);
 
   useEffect(() => {
     setAmpliado(false);
     if (red.viajes.length) cargarViaje(red.viajes[0].id);
-    else mutacion.mutate({ ampliar: false });
   }, [escenario]);
 
+  // Recalculate on every change so the answer never disappears; the previous one stays until the new one arrives.
   useEffect(() => {
-    if (!calcular) return;
-    setCalcular(false);
-    mutacion.mutate({ ampliar: false });
-  }, [calcular, origen, destino, salida, limite, flex]);
+    if (origen === "" || destino === "" || origen === destino) {
+      setResultado(null);
+      return;
+    }
+    const id = window.setTimeout(() => mutacion.mutate({ ampliar: false }), 250);
+    return () => window.clearTimeout(id);
+  }, [escenario, origen, destino, salida, limite, flex]);
 
   const opcionesFlex = useMemo(
     () => (FLEX_BASE.includes(flex) ? FLEX_BASE : [...FLEX_BASE, flex].sort((a, b) => a - b)),
@@ -84,10 +86,8 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
     setLimite(v.llegada_limite);
     setFlex(aMin(v.salida_hasta) - aMin(v.salida_desde));
     setHora(v.salida_desde);
-    setResultado(null);
     setAmpliado(false);
     setViajeSel(id);
-    setCalcular(true);
   }
 
   function clicNodo(id: string) {
@@ -105,31 +105,34 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
 
   const r = resultado?.recorrido ?? null;
   const restricciones = useMemo(() => restriccionesDelEscenario(red), [red]);
-  const resumen = useMemo(
-    () => resumenViajes(red.viajes, (id) => red.nodos.find((n) => n.id === id)?.nombre ?? id),
-    [red.viajes, red.nodos],
-  );
-  const nodosRuta = useMemo(() => {
-    if (!r) return [];
-    const mapa = new Map(red.tramos.map((t) => [t.id, t]));
-    const lista: PuntoRuta[] = [];
-    r.pasos.forEach((p, i) => {
-      const t = mapa.get(p.tramo_id);
-      if (!t) return;
-      const sale = { tramo: p.tramo_id, min: aMin(p.salida) - aMin(p.entrada) };
-      if (i === 0) lista.push({ id: t.origen, hora: p.entrada, sale });
-      else lista[lista.length - 1].sale = sale;
-      lista.push({ id: t.destino, hora: p.salida });
-    });
-    return lista;
-  }, [r, red.tramos]);
-  const horas = useMemo(() => Object.fromEntries(nodosRuta.map((p) => [p.id, p.hora])), [nodosRuta]);
+  const nodosRuta = useMemo(() => puntosRuta(r, red), [r, red]);
 
   const mismoNodo = origen !== "" && origen === destino;
   const incompleto = origen === "" || destino === "";
   const puedeCalcular = !mismoNodo && !incompleto && !mutacion.isPending;
   const puedeAmpliar =
-    resultado !== null && resultado.estado !== "A_TIEMPO" && !ampliado && aMin(limite) > aMin(salida);
+    resultado !== null &&
+    resultado.estado !== "A_TIEMPO" &&
+    resultado.motivo_sin_ruta !== "sin_acceso" &&
+    resultado.motivo_sin_ruta !== "horizonte" &&
+    !ampliado &&
+    aMin(limite) > aMin(salida);
+
+  const lote = useLote(escenario, PESO_PLAN, admin && viajeSel !== "");
+  const asigLote = admin && viajeSel ? lote.data?.equipo.asignaciones.find((a) => a.viaje_id === viajeSel) : undefined;
+  const nota = !ampliado && r ? notaLote(r, asigLote) : null;
+  // The batch route only matches the loaded trip, so the toggle disappears once the form is edited.
+  const rLote = !ampliado ? (asigLote?.recorrido ?? null) : null;
+  const mostrarLote = verLote && rLote !== null;
+  const rMapa = mostrarLote ? rLote : r;
+  const nodosMapa = useMemo(() => puntosRuta(rMapa, red), [rMapa, red]);
+  const horas = useMemo(() => Object.fromEntries(nodosMapa.map((p) => [p.id, p.hora])), [nodosMapa]);
+
+  function cambiarRuta(enLote: boolean) {
+    setVerLote(enLote);
+    const elegido = enLote ? rLote : r;
+    if (elegido) setHora(elegido.salida);
+  }
 
   const bloqueados = (estadoQ.data?.tramos ?? []).filter((t) => !t.seguro).length;
 
@@ -140,7 +143,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
       value={valor}
       onChange={(e) => {
         alCambiar(e.target.value);
-        setResultado(null);
         setViajeSel("");
       }}
     >
@@ -160,10 +162,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
       <Card titulo="Consultar ruta y sugerir salida" className="xl:sticky xl:top-5">
         <form
           className="grid gap-6 p-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (puedeCalcular) mutacion.mutate({ ampliar: false });
-          }}
+          onSubmit={(e) => e.preventDefault()}
         >
           {admin && (
             <Campo etiqueta="Cargar viaje del escenario" id="viaje">
@@ -180,7 +179,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                   </option>
                 ))}
               </select>
-              {resumen && <p className="mt-2 text-[13px] leading-snug text-muted">{resumen}</p>}
             </Campo>
           )}
 
@@ -235,7 +233,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                   if (aMin(limite) <= aMin(v)) {
                     setLimite(aHora(Math.min(aMin(v) + 60, aMin(red.config.fin))));
                   }
-                  setResultado(null);
                   setViajeSel("");
                 }}
               />
@@ -249,7 +246,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                 paso={red.config.intervalo_min}
                 alCambiar={(v) => {
                   setLimite(v);
-                  setResultado(null);
                   setViajeSel("");
                 }}
               />
@@ -266,7 +262,6 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
               opciones={opcionesFlex.map((m) => ({ valor: m, texto: m === 0 ? "Exacta" : `+${m} min` }))}
               alCambiar={(v) => {
                 setFlex(v);
-                setResultado(null);
                 setViajeSel("");
               }}
             />
@@ -285,17 +280,14 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
           </fieldset>
 
           {mismoNodo && <ErrorAviso mensaje="El origen y el destino deben ser distintos." />}
-          {mutacion.isError && (
-            <ErrorAviso mensaje={mutacion.error instanceof ApiError ? mutacion.error.message : "No se pudo calcular."} />
+          {mutacion.isError ? (
+            <ErrorAviso
+              mensaje={mutacion.error instanceof ApiError ? mutacion.error.message : "No se pudo calcular."}
+              onReintentar={puedeCalcular ? () => mutacion.mutate({ ampliar: false }) : undefined}
+            />
+          ) : (
+            <EstadoCalculo pendiente={mutacion.isPending} listo={resultado !== null} />
           )}
-
-          <button
-            type="submit"
-            disabled={!puedeCalcular}
-            className="rounded-xl bg-navy px-5 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-navy-deep disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            {mutacion.isPending ? "Calculando…" : "Calcular recorrido"}
-          </button>
         </form>
       </Card>
 
@@ -303,24 +295,35 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
         <AnimatePresence mode="wait">
           {resultado ? (
             <Resultado
-              key={version}
-              resultado={resultado}
+              key={`${version}-${mostrarLote ? "lote" : "individual"}`}
+              resultado={mostrarLote && rLote ? { ...resultado, estado: rLote.estado, recorrido: rLote } : resultado}
               red={red}
               limite={limite}
               ampliado={ampliado}
-              puedeAmpliar={puedeAmpliar}
+              puedeAmpliar={puedeAmpliar && !mostrarLote}
               pendiente={mutacion.isPending}
               onAmpliar={() => mutacion.mutate({ ampliar: true })}
-              nodosRuta={nodosRuta}
+              nodosRuta={mostrarLote ? nodosMapa : nodosRuta}
+              enLote={mostrarLote}
             />
           ) : (
             <div key="espera" className="skeleton h-44 rounded-2xl" aria-hidden="true" />
           )}
         </AnimatePresence>
 
+        {r && (
+          <p className="rounded-xl bg-blue-soft px-4 py-3 text-[13px] leading-snug text-navy">
+            <strong>Ruta individual:</strong> la más rápida y segura para este viaje, como si no hubiera más ciclistas.
+            {nota && <> {nota}</>}
+          </p>
+        )}
+
         <Card className="flex min-w-0 flex-col">
           <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4">
-            <h2 className="text-[15px] font-bold text-navy">Red de ciclorrutas</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-[15px] font-bold text-navy">Red de ciclorrutas</h2>
+              {rLote && <SelectorRuta lote={mostrarLote} alCambiar={cambiarRuta} />}
+            </div>
             <p
               className={`tnum rounded-full px-3 py-1 text-[13px] font-bold ${
                 bloqueados > 0 ? "bg-rose-soft text-rose-deep" : "bg-blue-soft text-blue-deep"
@@ -337,22 +340,14 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
               red={red}
               origen={origen || undefined}
               destino={destino || undefined}
-              ruta={r?.pasos}
-              rutaTarde={r?.estado === "TARDE"}
-              rutaKey={`${version}`}
+              ruta={rMapa?.pasos}
+              rutaTarde={rMapa?.estado === "TARDE"}
+              rutaKey={`${version}-${mostrarLote ? "lote" : "individual"}`}
               horas={horas}
               estado={estado}
               onNodo={clicNodo}
             />
           </div>
-
-          <ControlHora
-            red={red}
-            escenario={escenario}
-            hora={hora}
-            alCambiar={setHora}
-            viaje={r ? { salida: r.salida, llegada: r.llegada } : null}
-          />
 
           <div className="border-t border-line px-5 py-3.5">
             <LeyendaMapa modo="consulta" />
@@ -390,6 +385,45 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
           </details>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function puntosRuta(rec: Recorrido | null, red: Red): PuntoRuta[] {
+  if (!rec) return [];
+  const mapa = new Map(red.tramos.map((t) => [t.id, t]));
+  const lista: PuntoRuta[] = [];
+  rec.pasos.forEach((p, i) => {
+    const t = mapa.get(p.tramo_id);
+    if (!t) return;
+    const sale = { tramo: p.tramo_id, min: aMin(p.salida) - aMin(p.entrada) };
+    if (i === 0) lista.push({ id: t.origen, hora: p.entrada, sale });
+    else lista[lista.length - 1].sale = sale;
+    lista.push({ id: t.destino, hora: p.salida });
+  });
+  return lista;
+}
+
+export function SelectorRuta({ lote, alCambiar }: { lote: boolean; alCambiar: (lote: boolean) => void }) {
+  const opciones = [
+    { valor: false, texto: "Ruta individual" },
+    { valor: true, texto: "Ruta en el lote" },
+  ];
+  return (
+    <div role="group" aria-label="Ruta dibujada en el mapa" className="flex rounded-xl bg-ground p-1">
+      {opciones.map((o) => (
+        <button
+          key={o.texto}
+          type="button"
+          aria-pressed={lote === o.valor}
+          onClick={() => alCambiar(o.valor)}
+          className={`rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+            lote === o.valor ? "bg-navy text-white" : "text-muted hover:text-navy"
+          }`}
+        >
+          {o.texto}
+        </button>
+      ))}
     </div>
   );
 }

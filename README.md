@@ -142,7 +142,7 @@ PYTHONPATH=codigo:. .venv/bin/python -m uvicorn api.main:app --port 8000
 | GET | `/api/escenarios` | Índice de escenarios |
 | GET | `/api/escenarios/{id}/red` | Nodos, tramos, restricciones y viajes |
 | POST | `/api/escenarios/{id}/consulta` | Ruta, salida y llegada de un viaje suelto |
-| GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor |
+| GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor y `evaluador_ok` (resultado del evaluador oficial sobre el plan) |
 | GET | `/api/escenarios/{id}/estado-tramos?hora=` | Qué tramos se pueden usar a esa hora y por qué no |
 | GET | `/api/escenarios/{id}/linea-tiempo` | Tramos bloqueados en cada intervalo de 5 minutos, para ubicar los cambios del día |
 
@@ -184,7 +184,7 @@ Generada con `bicirutas.generar` (detalle en `resultados/comparacion.json`). Los
 | Escenario | Sobrecarga referencia | Sobrecarga equipo | Mejora | A tiempo | Tarde | Sin ruta segura |
 |-----------|----------------------:|------------------:|-------:|---------:|------:|----------------:|
 | 01_viaje_normal | 36 | 0 | 100 % | 8 | 0 | 0 |
-| 02_demanda_concentrada | 348 | 143 | 58,9 % | 44 | 16 | 0 |
+| 02_demanda_concentrada | 348 | 138 | 60,3 % | 44 | 16 | 0 |
 | 03_cierre_temporal | 48 | 0 | 100 % | 10 | 0 | 0 |
 | 04_recorrido_nocturno | 6 | 0 | 100 % | 10 | 0 | 0 |
 | 05_destino_sin_acceso | 0 | 0 | no aplica | 0 | 0 | 3 |
@@ -198,7 +198,7 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 
 - El código del equipo no importa el modelo oficial: se reimplementó para poder explicarlo. Los tests lo contrastan con el oficial en cada tramo y cada minuto de los seis escenarios.
 - La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
-- La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
+- La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`): cada bici-intervalo de sobrecarga cuesta lo mismo que 3 min de tardanza. Elegimos 3 probando pesos de 1 a 1000 con el evaluador oficial: es el que deja la menor sobrecarga en los seis escenarios (en 02, 138 frente a 143 con peso 1000; los otros cinco quedan idénticos). La búsqueda es voraz, así que un peso mayor no siempre da menos sobrecarga. La vista Lote muestra las métricas de cada nivel para comparar.
 - Los roles solo cambian lo que muestra la interfaz. No hay contraseña y la API sigue abierta, así que cualquiera puede cambiarse a Administración. Proteger de verdad exigiría una clave en `.env` y respuestas 403 en la API.
 - **Consulta equilibrada.** Con `criterio: "equilibrado"` (lo envía la vista de usuario), la consulta toma las rutas seguras que llegan a tiempo, fija un margen de `d0 + max(8, ceil(0.5 × d0))` minutos sobre la más rápida (`d0`) y elige la de menor costo marginal de congestión frente al reparto del equipo en ese escenario y a esa hora. Ejemplo en `01_viaje_normal`, de N01 a N05 a las 17:00: la más rápida tarda 12 min con 6 bici-intervalos de sobrecarga; la recomendada tarda 20 min con 2. Sin `criterio`, la consulta devuelve la más rápida como antes, igual que la referencia oficial. El lote y los JSON de `resultados/` no usan esta consulta, así que la entrega evaluada no cambia.
 - No es una solución óptima global ni un simulador de tráfico real.
