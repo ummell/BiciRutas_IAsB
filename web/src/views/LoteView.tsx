@@ -5,7 +5,7 @@ import { ApiError } from "../lib/api";
 import { useLote } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
 import { ETIQUETA_ESTADO, plural } from "../lib/texto";
-import { MapaInteractivo } from "../components/MapaInteractivo";
+import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
 import { AnimatedNumber, Card, ErrorAviso, EstadoChip } from "../components/ui";
 
 const PESOS = [1, 2, 3, 10, 1000];
@@ -228,11 +228,9 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                 ))}
               </div>
             </div>
-            <div className="p-3">
-              <MapaInteractivo
-                escenario={escenario}
+            <div className="px-3 pb-1 pt-2">
+              <NetworkMap
                 red={red}
-                modo="admin"
                 origen={seleccion?.viaje.origen}
                 destino={seleccion?.viaje.destino}
                 ruta={rutaSel?.pasos}
@@ -240,8 +238,10 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                 rutaKey={`${sel}-${lado}`}
                 calor={lado === "equipo" ? calc.calorEq : calc.calorRef}
                 calorMax={calc.max}
-                className="h-[min(600px,70vh)] min-h-[440px]"
               />
+            </div>
+            <div className="border-t border-line px-5 py-3.5">
+              <LeyendaMapa modo="calor" />
             </div>
           </Card>
 
