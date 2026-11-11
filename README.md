@@ -39,6 +39,7 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
 ## Características
 
 - **Consulta de ruta:** origen, destino y hora límite devuelven recorrido, salida y llegada.
+- **Ruta equilibrada (vista de usuario):** entre las rutas que llegan a tiempo, recomienda la de menor congestión que no tarde mucho más que la más rápida, y muestra hasta tres opciones (recomendada, más rápida, menos congestión) con su nivel de congestión.
 - **Seguridad no negociable:** una ruta con un tramo excluido es inválida. Se excluye por cierre, riesgo vial, tramo no habilitado o noche sin iluminación (18:00 a 21:00).
 - **Reparto de viajes:** elige rutas y salidas considerando la carga que generan las otras recomendaciones.
 - **Estados claros:** `A_TIEMPO`, `TARDE` o `SIN_RUTA_SEGURA`. Los viajes tardíos siguen en la simulación y se muestran.
@@ -48,7 +49,7 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
   - **Usuario** (por defecto): solo la consulta de ruta, sobre el escenario `01_viaje_normal`. No ve escenarios de prueba, lote, comparación con la referencia ni la carga de viajes de muestra.
   - **Administración:** ve todo, incluidos los seis escenarios, el lote y la comparación.
 - **Web con Motion:** trazo animado de la ruta sobre el plano, transiciones entre vistas y contadores de sobrecarga.
-- **Identidad visual:** paleta, tipografía (Bricolage Grotesque + Inter) y reglas del mapa definidas a partir del logo en [`DESIGN.md`](DESIGN.md). El mapa interactivo tiene zoom, capas, modo noche y vista de calle.
+- **Identidad visual:** paleta, tipografía (Bricolage Grotesque + Inter) y reglas del mapa definidas a partir del logo en [`DESIGN.md`](DESIGN.md). El mapa interactivo de la vista de usuario tiene zoom, modo noche, capa de cobertura por estación, flujo animado en los tramos seguros y la bici recorriendo la ruta. Administración usa el plano de la red con su control de hora.
 
 ---
 
@@ -192,7 +193,21 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 - La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
 - La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
 - Los roles solo cambian lo que muestra la interfaz. No hay contraseña y la API sigue abierta, así que cualquiera puede cambiarse a Administración. Proteger de verdad exigiría una clave en `.env` y respuestas 403 en la API.
+- **Consulta equilibrada.** Con `criterio: "equilibrado"` (lo envía la vista de usuario), la consulta toma las rutas seguras que llegan a tiempo, fija un margen de `d0 + max(8, ceil(0.5 × d0))` minutos sobre la más rápida (`d0`) y elige la de menor costo marginal de congestión frente al reparto del equipo en ese escenario y a esa hora. Ejemplo en `01_viaje_normal`, de N01 a N05 a las 17:00: la más rápida tarda 12 min con 6 bici-intervalos de sobrecarga; la recomendada tarda 20 min con 2. Sin `criterio`, la consulta devuelve la más rápida como antes, igual que la referencia oficial. El lote y los JSON de `resultados/` no usan esta consulta, así que la entrega evaluada no cambia.
 - No es una solución óptima global ni un simulador de tráfico real.
+
+## Necesidades de la empresa
+
+Lo que ias software describió para su proyecto Bike y en qué estado queda en este prototipo:
+
+| Necesidad | Estado |
+|---|---|
+| Ruta segura de A a B, evitando zonas peligrosas | Hecho: exclusión por cierre, riesgo vial, tramo no habilitado e iluminación según la hora |
+| Saber cuándo salir y cuánto se tarda | Hecho: salida, llegada y duración por tramo |
+| Ruta idónea por hora, congestión y seguridad, no solo la más corta | Hecho: consulta equilibrada y reparto del lote |
+| Rutas alternativas | Hecho: hasta tres opciones con su congestión |
+| Estaciones y bici-parqueaderos reales | Parcial: la red es ficticia por diseño del reto; el mapa de usuario representa los nodos como estaciones con su cobertura |
+| Registro de bici-usuarios y bicicletas, georreferenciación de recorridos, otras ciudades, patinetas eléctricas | Fuera del alcance del reto (no hay autenticación, GPS ni datos reales). Queda como hoja de ruta: cargar estaciones reales como nodos, sumar usuarios y bicicletas, y aplicar la misma lógica de grafo a otras ciudades |
 
 ## Equipo y tareas
 
