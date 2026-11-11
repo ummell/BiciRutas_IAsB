@@ -180,10 +180,12 @@ Orden de dibujo, de abajo hacia arriba. Ninguna capa debe tapar a una superior.
 | 2 | Manzanas | `--map-manzana`, esquinas de 4 px, **sin bordes** |
 | 3 | Parques | `--br-salvia-100`; con zoom, siluetas de árboles en `--br-salvia-300` |
 | 4 | Agua | `--map-agua`, bordes orgánicos; nombre en cursiva `--br-salvia` |
+| 4b | Cobertura (solo usuario) | Halo radial `--br-bosque-600` de ~240 m por lugar con un borde punteado tenue, fijo (sin parpadeo). Un lugar sin salidas seguras a esa hora muestra un halo rojo ladrillo más pequeño y sin onda |
 | 5 | Borde de vías | `--map-borde-via`, 2 px más ancho que la vía a cada lado |
 | 6 | Vías | Blanco (ver 5.1) |
 | 7 | Ciclorrutas | Línea central (ver 5.1) |
 | 8 | Tráfico o sobrecarga | Solo si la capa está activa; reemplaza a la capa 7 |
+| 8b | Flujo (solo usuario) | Puntos `--br-bosque-600` que avanzan en el sentido del tramo, solo sobre tramos seguros a esa hora; ciclistas ambiente (círculo `--br-bosque-600` con bici blanca, nunca naranja) recorren algunos tramos seguros |
 | 9 | Bloqueos | Punteado rojo + icono |
 | 10 | Ruta | Borde bosque + relleno naranja (ver 5.2) |
 | 11 | Tramo seleccionado o resaltado | Halo |
@@ -212,16 +214,18 @@ Orden de dibujo, de abajo hacia arriba. Ninguna capa debe tapar a una superior.
 | Tramos de la ruta que se bloquean a la hora elegida | Se marcan encima con punteado rojo |
 | Resto del mapa cuando hay ruta | Vías y lugares bajan al 70 % de opacidad para que la ruta destaque |
 | Aparición | La ruta se "dibuja" tramo a tramo desde el origen (0,25 s por tramo) |
+| Ruta viva (usuario) | Al terminar de dibujarse, puntos `--br-rueda-100` avanzan sobre la ruta y la bici en movimiento la recorre en bucle |
 
 ### 5.3 Marcadores
 
 | Marcador | Diseño |
 |---|---|
 | **Destino** | Pin del logo simplificado: silueta verde bosque, arco naranja en la parte superior y punto blanco en el centro. 36 px. Cae con un pequeño rebote al aparecer |
-| **Origen** | Círculo blanco de 16 px con anillo verde bosque de 4 px |
-| **Lugar (resto de puntos)** | Punto de 8 px en `--br-salvia` con borde blanco; el nombre aparece con zoom o al pasar el cursor |
+| **Origen** | Círculo blanco de 16 px con anillo verde bosque de 4 px. Usuario: 22 px con anillo de 5 px |
+| **Lugar (resto de puntos)** | Por defecto: punto de 8 px en `--br-salvia` con borde blanco. Usuario: estación de 20 px, blanca con anillo salvia y centro `--br-bosque-600`; sin salidas seguras, disco `--estado-bloqueado` con barra blanca (forma, no solo color). Zona táctil de 40 px; crece a 1,3× con resorte al pasar el cursor o enfocar. El nombre aparece con zoom, al pasar el cursor o al enfocar |
 | **Lugar seleccionado** | Anillo `--br-bosque-100` de 26 px alrededor del punto |
 | **Bici en movimiento** | Círculo naranja `--br-rueda` de 22 px con bici blanca y anillo blanco; estela naranja translúcida detrás |
+| **Bici-parqueadero** (usuario) | Cuadrado `--br-bosque` de 26 px con esquinas de 7 px, "P" blanca y punto de cobertura arriba a la derecha (verde si tiene salidas seguras, rojo si no). Su nombre siempre está visible. Si es origen o destino, una "P" pequeña acompaña al marcador |
 | **Tramo en vista de calle** | Figura de persona en `--br-rueda` sobre círculo blanco (equivalente al muñeco de Street View) |
 
 ---
@@ -232,7 +236,7 @@ Todos comparten: fondo blanco, esquinas de **12 px**, sombra `0 2px 8px rgb(25 5
 
 | Elemento | Ubicación | Notas |
 |---|---|---|
-| Zoom + / − | Abajo a la derecha | Botones de 40 px apilados |
+| Zoom + / − | Abajo a la derecha | Botones de 48 px apilados |
 | Recentrar | Encima del zoom | Encuadra la ruta, o toda la red si no hay ruta |
 | Capas | Encima de recentrar | Abre un panel con interruptores (no casillas) |
 | Escala | Debajo del zoom | "200 m" con barra en `--br-bosque` |

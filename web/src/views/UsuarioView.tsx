@@ -2,9 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { MapaInteractivo } from "../components/MapaInteractivo";
-import { ErrorAviso, EstadoChip } from "../components/ui";
-import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
+import { ErrorAviso, EstadoCalculo, EstadoChip } from "../components/ui";
+import { api, ApiError, type ConsultaOut, type Recorrido, type Red } from "../lib/api";
 import { formatoDistancia } from "../lib/mapa";
+import { PARQUEADEROS } from "../lib/parqueaderos";
+import { ETIQUETA_OPCION, nivelCongestion, plural, textoSinRuta } from "../lib/texto";
 import { aHora, aMin } from "../lib/time";
 
 const CAMPO =
@@ -19,23 +21,43 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
   const [limite, setLimite] = useState("18:00");
   const [resultado, setResultado] = useState<ConsultaOut | null>(null);
   const [version, setVersion] = useState(0);
+  const [indiceSeleccionado, setIndiceSeleccionado] = useState(0);
 
   const mutacion = useMutation({
     mutationFn: () =>
-      api.consulta(escenario, { origen, destino, salida_desde: salida, salida_hasta: salida, llegada_limite: limite }),
+      api.consulta(escenario, {
+        origen,
+        destino,
+        salida_desde: salida,
+        salida_hasta: salida,
+        llegada_limite: limite,
+        criterio: "equilibrado",
+      }),
     onSuccess: (r) => {
       setResultado(r);
       setVersion((v) => v + 1);
+      setIndiceSeleccionado(0);
     },
   });
 
+  // Recalculate on every change so the answer never disappears; the previous one stays until the new one arrives.
   useEffect(() => {
-    mutacion.mutate();
-  }, [escenario]);
+    if (origen === "" || destino === "" || origen === destino || !salida || !limite) {
+      setResultado(null);
+      return;
+    }
+    const id = window.setTimeout(() => mutacion.mutate(), 250);
+    return () => window.clearTimeout(id);
+  }, [escenario, origen, destino, salida, limite]);
 
   const tramos = useMemo(() => new Map(red.tramos.map((t) => [t.id, t])), [red.tramos]);
   const nombre = (id: string) => red.nodos.find((n) => n.id === id)?.nombre ?? id;
-  const r = resultado?.recorrido ?? null;
+  const opciones = resultado?.opciones;
+  const r: Recorrido | null =
+    opciones && opciones.length > 0
+      ? opciones[indiceSeleccionado]?.recorrido ?? null
+      : resultado?.recorrido ?? null;
+  const chipEstado = opciones?.length && r ? r.estado : resultado?.estado ?? "SIN_RUTA_SEGURA";
   const distancia = r ? r.pasos.reduce((s, p) => s + (tramos.get(p.tramo_id)?.distancia_m ?? 0), 0) : 0;
   const mismo = origen !== "" && origen === destino;
   const puede = !mismo && origen !== "" && destino !== "" && !mutacion.isPending;
@@ -48,7 +70,6 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
       value={valor}
       onChange={(e) => {
         cambiar(e.target.value);
-        setResultado(null);
       }}
     >
       <option value="" disabled>
@@ -57,6 +78,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
       {red.nodos.map((n) => (
         <option key={n.id} value={n.id}>
           {n.nombre}
+          {PARQUEADEROS.some((x) => x.nodo === n.id) ? " · bici-parqueadero" : ""}
         </option>
       ))}
     </select>
@@ -71,10 +93,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
 
           <form
             className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (puede) mutacion.mutate();
-            }}
+            onSubmit={(e) => e.preventDefault()}
           >
             <div className="relative grid grid-cols-[minmax(0,1fr)] gap-2 pr-11">
               <label className="grid gap-1 text-[13px] font-semibold text-muted">
@@ -90,8 +109,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
                 onClick={() => {
                   setOrigen(destino);
                   setDestino(origen);
-                  setResultado(null);
-                }}
+                        }}
                 aria-label="Invertir origen y destino"
                 className="absolute right-0 top-1/2 grid size-9 -translate-y-1/4 place-items-center rounded-full border border-line text-bosque transition-colors hover:border-bosque hover:bg-bosque-100"
               >
@@ -114,7 +132,6 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
                   value={salida}
                   onChange={(e) => {
                     setSalida(e.target.value);
-                    setResultado(null);
                   }}
                 />
               </label>
@@ -130,24 +147,20 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
                   value={limite}
                   onChange={(e) => {
                     setLimite(e.target.value);
-                    setResultado(null);
                   }}
                 />
               </label>
             </div>
 
             {mismo && <ErrorAviso mensaje="El punto de partida y el destino deben ser distintos." />}
-            {mutacion.isError && (
-              <ErrorAviso mensaje={mutacion.error instanceof ApiError ? mutacion.error.message : "No se pudo calcular la ruta."} />
+            {mutacion.isError ? (
+              <ErrorAviso
+                mensaje={mutacion.error instanceof ApiError ? mutacion.error.message : "No se pudo calcular la ruta."}
+                onReintentar={puede ? () => mutacion.mutate() : undefined}
+              />
+            ) : (
+              <EstadoCalculo pendiente={mutacion.isPending} listo={resultado !== null} />
             )}
-
-            <button
-              type="submit"
-              disabled={!puede}
-              className="mt-1 rounded-xl bg-bosque px-5 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-bosque-900 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {mutacion.isPending ? "Buscando ruta…" : "Buscar ruta"}
-            </button>
           </form>
         </section>
 
@@ -162,7 +175,7 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
               exit={reducir ? undefined : { opacity: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              <EstadoChip estado={resultado.estado} grande />
+              <EstadoChip estado={chipEstado} grande />
               {r ? (
                 <>
                   <div className="mt-4 flex items-end gap-3">
@@ -195,8 +208,46 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
               ) : (
                 <>
                   <p className="mt-3 text-[17px] font-bold">No hay una ruta segura a esa hora.</p>
-                  <p className="mt-1 text-[13.5px] text-white/75">Prueba con otra hora de salida o con otro destino.</p>
+                  <p className="mt-1 text-[13.5px] text-white/75">
+                    {textoSinRuta(resultado?.motivo_sin_ruta, red.config.fin)}
+                  </p>
                 </>
+              )}
+              {opciones && opciones.length > 1 && (
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-white/50">Opciones de ruta</h3>
+                  <p className="mt-1 text-[12px] leading-snug text-white/60">
+                    La recomendada tiene en cuenta los{" "}
+                    {plural(red.viajes.length, "viaje planificado", "viajes planificados")} del operador y evita los tramos
+                    que ya ocupan si el desvío es corto. La más rápida no los tiene en cuenta.
+                  </p>
+                  <div className="mt-2.5 grid gap-2">
+                    {opciones.map((op, i) => (
+                      <button
+                        key={op.etiqueta}
+                        type="button"
+                        aria-pressed={i === indiceSeleccionado}
+                        onClick={() => setIndiceSeleccionado(i)}
+                        className={`w-full rounded-xl border p-3 text-left transition-colors ${
+                          i === indiceSeleccionado
+                            ? "border-amber-light bg-white/15"
+                            : "border-white/10 hover:border-white/25"
+                        }`}
+                      >
+                        <span className="text-[13px] font-bold text-amber-light">
+                          {ETIQUETA_OPCION[op.etiqueta]}
+                        </span>
+                        <div className="mt-1 flex items-center gap-3 text-[13px] text-white/80">
+                          <span className="tnum font-medium">{op.recorrido.duracion_min} min</span>
+                          <span className="tnum">llega {op.recorrido.llegada}</span>
+                        </div>
+                        <p className="mt-0.5 text-[12px] text-white/60">
+                          {nivelCongestion(op.congestion)} · {op.congestion} bici-intervalos
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </motion.section>
           )}
@@ -213,16 +264,14 @@ export function UsuarioView({ escenario, red }: { escenario: string; red: Red })
         destino={destino || undefined}
         ruta={r?.pasos}
         rutaTarde={r?.estado === "TARDE"}
-        rutaKey={`${version}`}
+        rutaKey={`${version}-${indiceSeleccionado}`}
         onOrigen={(id) => {
           setOrigen(id);
           if (id === destino) setDestino("");
-          setResultado(null);
         }}
         onDestino={(id) => {
           setDestino(id);
           if (id === origen) setOrigen("");
-          setResultado(null);
         }}
         className="h-[min(680px,76vh)] min-h-[460px] shadow-card"
       />

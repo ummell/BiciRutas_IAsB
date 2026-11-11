@@ -69,10 +69,29 @@ export interface Recorrido {
   tardanza_min: number;
   pasos: Paso[];
 }
+export type EtiquetaOpcion = "recomendada" | "mas_rapida" | "menos_congestion";
+
+export interface OpcionEquilibrada {
+  etiqueta: EtiquetaOpcion;
+  congestion: number;
+  recorrido: Recorrido;
+}
+
+/** Congestion weight of the delivered plan (estrategia.PESO_CONGESTION). */
+export const PESO_PLAN = 3;
+
+export type MotivoSinRuta = "horizonte" | "sin_acceso" | "bloqueo";
+
 export interface ConsultaOut {
   estado: Estado;
   alternativas: number;
   recorrido: Recorrido | null;
+  motivo_sin_ruta?: MotivoSinRuta;
+  rutas_seguras?: number;
+  salidas_evaluadas?: number;
+  criterio?: "rapido" | "equilibrado";
+  congestion?: number | null;
+  opciones?: OpcionEquilibrada[];
 }
 export interface ConsultaIn {
   origen: string;
@@ -80,6 +99,7 @@ export interface ConsultaIn {
   salida_desde: string;
   llegada_limite: string;
   salida_hasta?: string;
+  criterio?: "rapido" | "equilibrado";
 }
 export interface Metricas {
   sobrecarga_acumulada_bici_intervalo: number;
@@ -110,6 +130,7 @@ export interface LoteLado {
   metricas: Metricas;
   asignaciones: Asignacion[];
   ocupacion: OcupacionFila[];
+  evaluador_ok?: boolean;
 }
 export interface Lote {
   escenario_id: string;

@@ -33,6 +33,7 @@ export const MARCA = {
   bosque100: "#e3ece5",
   rueda: "#e07a2b",
   rueda700: "#a34e16",
+  rueda100: "#fcebdd",
   salvia: "#667f63",
   bloqueado: "#b5322a",
 };
@@ -294,14 +295,23 @@ export function cajaDe(puntos: P[], margen = 0): Caja {
   return { x, y, w: Math.max(...xs) + margen - x, h: Math.max(...ys) + margen - y };
 }
 
-export function encuadrar(caja: Caja, ancho: number, alto: number, izquierda: number, derecha = 150): Caja {
+export function encuadrar(
+  caja: Caja,
+  ancho: number,
+  alto: number,
+  izquierda: number,
+  derecha = 150,
+  arriba = 15,
+  abajo = 75,
+): Caja {
   const util = Math.max(ancho - izquierda - derecha, 200);
-  const s = Math.max(caja.w / util, caja.h / Math.max(alto - 90, 200));
+  const utilAlto = Math.max(alto - arriba - abajo, 200);
+  const s = Math.max(caja.w / util, caja.h / utilAlto);
   const w = ancho * s;
   const h = alto * s;
   const cx = caja.x + caja.w / 2;
   const cy = caja.y + caja.h / 2;
-  return { x: cx - (izquierda + util / 2) * s, y: cy - (alto / 2 - 30) * s, w, h };
+  return { x: cx - (izquierda + util / 2) * s, y: cy - (arriba + (alto - arriba - abajo) / 2) * s, w, h };
 }
 
 export function escalaBonita(metrosPorPx: number): { metros: number; px: number } {
@@ -316,4 +326,21 @@ export function escalaBonita(metrosPorPx: number): { metros: number; px: number 
 
 export function formatoDistancia(m: number): string {
   return m >= 1000 ? `${(m / 1000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} km` : `${m} m`;
+}
+
+/** Splits a long station name into two balanced lines so labels fit between neighbouring stations. */
+export function partirNombre(nombre: string, maximo = 13): string[] {
+  const palabras = nombre.split(" ");
+  if (nombre.length <= maximo || palabras.length < 2) return [nombre];
+  let mejor: string[] = [nombre];
+  let largoMejor = Infinity;
+  for (let i = 1; i < palabras.length; i++) {
+    const lineas = [palabras.slice(0, i).join(" "), palabras.slice(i).join(" ")];
+    const largo = Math.max(lineas[0].length, lineas[1].length);
+    if (largo < largoMejor) {
+      mejor = lineas;
+      largoMejor = largo;
+    }
+  }
+  return mejor;
 }
