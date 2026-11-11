@@ -6,3 +6,6 @@ __pycache__/
 node_modules/
 dist/
 .DS_Store
+
+# Datos de la empresa: se copian del kit, no se versionan
+gestion/
