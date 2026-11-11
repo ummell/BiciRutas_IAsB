@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Metricas } from "./lib/api";
-import { ETIQUETA_OPCION, explicarLote, nivelCongestion } from "./lib/texto";
+import type { Metricas, Viaje } from "./lib/api";
+import { ETIQUETA_OPCION, etiquetaViaje, explicarLote, nivelCongestion, resumenViajes } from "./lib/texto";
 
 describe("nivelCongestion", () => {
   it("devuelve 'Sin congestión' para 0", () => {
@@ -90,5 +90,38 @@ describe("explicarLote", () => {
 
   it("sin mejora ni costo no agrega explicaciones", () => {
     expect(explicarLote(m({}), m({})).costos).toEqual([]);
+  });
+});
+
+describe("viajes del escenario", () => {
+  const v = (id: string, modalidad: string, extra: Partial<Viaje> = {}): Viaje => ({
+    id,
+    orden: 1,
+    origen: "N01",
+    destino: "N05",
+    salida_desde: "17:00",
+    salida_hasta: "17:10",
+    llegada_limite: "17:35",
+    modalidad,
+    ...extra,
+  });
+  const nombre = (id: string) => ({ N01: "Portal Andino", N05: "Casa del Encuentro" })[id] ?? id;
+
+  it("resume los viajes idénticos y explica qué prueba el escenario", () => {
+    expect(resumenViajes([v("V001", "propia"), v("V002", "publica")], nombre)).toBe(
+      "Los 2 viajes de este escenario van de Portal Andino a Casa del Encuentro, salen entre 17:00 y 17:10 y deben llegar antes de las 17:35. Solo cambia la modalidad: el escenario prueba qué pasa cuando muchos ciclistas piden la misma ruta.",
+    );
+  });
+
+  it("no resume si los viajes son distintos", () => {
+    expect(resumenViajes([v("V001", "propia"), v("V002", "propia", { destino: "N16" })], nombre)).toBeNull();
+  });
+
+  it("etiqueta cada viaje con lo que cambia", () => {
+    const iguales = [v("V001", "propia"), v("V002", "publica")];
+    expect(etiquetaViaje(iguales[0], iguales)).toBe("V001 · bici propia");
+    expect(etiquetaViaje(iguales[1], iguales)).toBe("V002 · bici pública");
+    const distintos = [v("V001", "propia"), v("V002", "publica", { salida_desde: "18:00", salida_hasta: "18:10" })];
+    expect(etiquetaViaje(distintos[1], distintos)).toBe("V002 · N01 → N05 · 18:00–18:10 · bici pública");
   });
 });

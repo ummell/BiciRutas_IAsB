@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, ApiError, type ConsultaOut, type Red } from "../lib/api";
 import { useEstadoTramos } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
-import { plural } from "../lib/texto";
+import { etiquetaViaje, plural, resumenViajes } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
 import { ControlHora } from "../components/ControlHora";
 import { Resultado, type PuntoRuta } from "../components/Resultado";
@@ -104,6 +104,10 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   }
 
   const r = resultado?.recorrido ?? null;
+  const resumen = useMemo(
+    () => resumenViajes(red.viajes, (id) => red.nodos.find((n) => n.id === id)?.nombre ?? id),
+    [red.viajes, red.nodos],
+  );
   const nodosRuta = useMemo(() => {
     if (!r) return [];
     const mapa = new Map(red.tramos.map((t) => [t.id, t]));
@@ -171,10 +175,11 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                 <option value="">Elegir un viaje…</option>
                 {red.viajes.map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.id} · {v.origen} → {v.destino} · {v.salida_desde}–{v.salida_hasta}
+                    {etiquetaViaje(v, red.viajes)}
                   </option>
                 ))}
               </select>
+              {resumen && <p className="mt-2 text-[13px] leading-snug text-muted">{resumen}</p>}
             </Campo>
           )}
 

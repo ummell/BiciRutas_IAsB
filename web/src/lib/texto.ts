@@ -1,4 +1,4 @@
-import type { Estado, EtiquetaOpcion, Metricas } from "./api";
+import type { Estado, EtiquetaOpcion, Metricas, Viaje } from "./api";
 
 const MOTIVOS: Record<string, string> = {
   cierre_por_obras: "Cierre por obras",
@@ -85,4 +85,27 @@ export function explicarLote(ref: Metricas, eq: Metricas): { sobrecarga: string;
     costos.push("Repartir no cuesta minutos de viaje ni tardanza.");
   }
   return { sobrecarga, costos };
+}
+
+const MODALIDAD: Record<string, string> = { propia: "bici propia", publica: "bici pública" };
+
+const mismoViaje = (a: Viaje, b: Viaje) =>
+  a.origen === b.origen &&
+  a.destino === b.destino &&
+  a.salida_desde === b.salida_desde &&
+  a.salida_hasta === b.salida_hasta &&
+  a.llegada_limite === b.llegada_limite;
+
+const iguales = (viajes: Viaje[]) => viajes.length > 1 && viajes.every((v) => mismoViaje(v, viajes[0]));
+
+export function resumenViajes(viajes: Viaje[], nombre: (id: string) => string): string | null {
+  if (!iguales(viajes)) return null;
+  const v = viajes[0];
+  return `Los ${viajes.length} viajes de este escenario van de ${nombre(v.origen)} a ${nombre(v.destino)}, salen entre ${v.salida_desde} y ${v.salida_hasta} y deben llegar antes de las ${v.llegada_limite}. Solo cambia la modalidad: el escenario prueba qué pasa cuando muchos ciclistas piden la misma ruta.`;
+}
+
+export function etiquetaViaje(v: Viaje, viajes: Viaje[]): string {
+  const modalidad = MODALIDAD[v.modalidad] ?? v.modalidad;
+  if (iguales(viajes)) return `${v.id} · ${modalidad}`;
+  return `${v.id} · ${v.origen} → ${v.destino} · ${v.salida_desde}–${v.salida_hasta} · ${modalidad}`;
 }
