@@ -218,7 +218,6 @@ export function ErrorAviso({ mensaje, onReintentar }: { mensaje: string; onReint
   );
 }
 
-// The answer recalculates on every change, so this only reports progress; it is not an action.
 export function EstadoCalculo({ pendiente, listo }: { pendiente: boolean; listo: boolean }) {
   return (
     <p aria-live="polite" className="flex min-h-5 items-center gap-2 text-[13px] font-semibold text-muted">

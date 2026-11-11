@@ -77,7 +77,6 @@ export interface OpcionEquilibrada {
   recorrido: Recorrido;
 }
 
-/** Congestion weight of the delivered plan (estrategia.PESO_CONGESTION). */
 export const PESO_PLAN = 3;
 
 export type MotivoSinRuta = "horizonte" | "sin_acceso" | "bloqueo";

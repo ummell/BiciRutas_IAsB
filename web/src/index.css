@@ -2,9 +2,6 @@
 @import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/inter";
 
-/* Paleta y tipografía según DESIGN.md (basadas en el logo).
-   Los nombres navy/blue/amber/rose se conservan para no tocar las clases de las vistas;
-   sus valores ahora son los de la marca. */
 @theme {
   --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif;

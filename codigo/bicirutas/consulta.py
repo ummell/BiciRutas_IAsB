@@ -36,7 +36,6 @@ def candidatos(esc: Escenario, viaje: dict) -> list[Recorrido]:
 
 
 def motivo_sin_ruta(esc: Escenario, viaje: dict) -> str:
-    """Why a trip has no safe route: 'horizonte', 'sin_acceso' or 'bloqueo'."""
     for tramos in rutas_simples(esc, viaje["origen"], viaje["destino"]):
         for salida in salidas_permitidas(esc, viaje):
             try:

@@ -189,7 +189,6 @@ export function textoSinRuta(motivo: MotivoSinRuta | undefined, fin: string): st
   return "Todos los recorridos posibles usan algún tramo bloqueado a esa hora. Otra hora de salida sí puede tener ruta segura.";
 }
 
-/** For each level, the index of another level with less overload and less lateness (at least one strictly), or null. */
 export function planDominante(niveles: Metricas[]): (number | null)[] {
   return niveles.map((a, i) => {
     const j = niveles.findIndex(
