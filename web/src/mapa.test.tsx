@@ -33,7 +33,7 @@ const red: Red = {
 
 const capas: Capas = { calor: false, ciclo: true, trafico: false, seguridad: true, etiquetas: false };
 
-function canvas(estado: Record<string, EstadoTramo> = {}, vivo = true) {
+function canvas(estado: Record<string, EstadoTramo> = {}, vivo = true, parqueaderos?: Set<string>) {
   const sin = () => undefined;
   return renderToStaticMarkup(
     <MapaCanvas
@@ -60,6 +60,7 @@ function canvas(estado: Record<string, EstadoTramo> = {}, vivo = true) {
       minutoBici={null}
       vivo={vivo}
       radioCobertura={110}
+      parqueaderos={parqueaderos}
     />,
   );
 }
@@ -95,6 +96,13 @@ describe("mapa de usuario en modo vivo", () => {
     const html = canvas({ T02: { tramo_id: "T02", seguro: false, motivo: "Cierre temporal" } });
     expect(html).toContain('aria-label="Plazoleta, destino, sin salidas seguras a esta hora"');
     expect(cuenta(html, 'class="onda-cobertura"')).toBe(1);
+  });
+
+  it("muestra los bici-parqueaderos como estaciones con P", () => {
+    const html = canvas({}, true, new Set(["N03"]));
+    expect(html).toContain('aria-label="Biblioteca, bici-parqueadero, sin salidas seguras a esta hora"');
+    expect(cuenta(html, ">P</text>")).toBe(1);
+    expect(canvas({}, false, new Set(["N03"]))).not.toContain("bici-parqueadero");
   });
 
   it("sin modo vivo conserva el mapa sin capas animadas", () => {

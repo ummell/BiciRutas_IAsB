@@ -39,6 +39,7 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
 ## Características
 
 - **Consulta de ruta:** origen, destino y hora límite devuelven recorrido, salida y llegada.
+- **Bici-parqueaderos (vista de usuario):** Mercado Central (N04) y Centro Cultural (N08) se muestran como bici-parqueaderos de ejemplo, con cupos y horario. Desde cualquier lugar, "Ir al parqueadero más cercano" elige el más cercano por distancia sobre el grafo dirigido, sin usar vías no habilitadas. Se definen en `web/src/lib/parqueaderos.ts`; los datos de la empresa en `gestion/` no cambian.
 - **Ruta equilibrada (vista de usuario):** entre las rutas que llegan a tiempo, recomienda la de menor congestión que no tarde mucho más que la más rápida, y muestra hasta tres opciones (recomendada, más rápida, menos congestión) con su nivel de congestión.
 - **Seguridad no negociable:** una ruta con un tramo excluido es inválida. Se excluye por cierre, riesgo vial, tramo no habilitado o noche sin iluminación (18:00 a 21:00).
 - **Reparto de viajes:** elige rutas y salidas considerando la carga que generan las otras recomendaciones.
@@ -206,7 +207,7 @@ Lo que ias software describió para su proyecto Bike y en qué estado queda en e
 | Saber cuándo salir y cuánto se tarda | Hecho: salida, llegada y duración por tramo |
 | Ruta idónea por hora, congestión y seguridad, no solo la más corta | Hecho: consulta equilibrada y reparto del lote |
 | Rutas alternativas | Hecho: hasta tres opciones con su congestión |
-| Estaciones y bici-parqueaderos reales | Parcial: la red es ficticia por diseño del reto; el mapa de usuario representa los nodos como estaciones con su cobertura |
+| Estaciones y bici-parqueaderos reales | Parcial: la red es ficticia por diseño del reto; el mapa de usuario muestra los nodos como estaciones con su cobertura y dos bici-parqueaderos de ejemplo con "ir al más cercano" |
 | Registro de bici-usuarios y bicicletas, georreferenciación de recorridos, otras ciudades, patinetas eléctricas | Fuera del alcance del reto (no hay autenticación, GPS ni datos reales). Queda como hoja de ruta: cargar estaciones reales como nodos, sumar usuarios y bicicletas, y aplicar la misma lógica de grafo a otras ciudades |
 
 ## Equipo y tareas

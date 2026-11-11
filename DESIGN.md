@@ -225,6 +225,7 @@ Orden de dibujo, de abajo hacia arriba. Ninguna capa debe tapar a una superior.
 | **Lugar (resto de puntos)** | Por defecto: punto de 8 px en `--br-salvia` con borde blanco. Usuario: estación de 20 px, blanca con anillo salvia y centro `--br-bosque-600`; sin salidas seguras, disco `--estado-bloqueado` con barra blanca (forma, no solo color). Zona táctil de 40 px; crece a 1,3× con resorte al pasar el cursor o enfocar. El nombre aparece con zoom, al pasar el cursor o al enfocar |
 | **Lugar seleccionado** | Anillo `--br-bosque-100` de 26 px alrededor del punto |
 | **Bici en movimiento** | Círculo naranja `--br-rueda` de 22 px con bici blanca y anillo blanco; estela naranja translúcida detrás |
+| **Bici-parqueadero** (usuario) | Cuadrado `--br-bosque` de 26 px con esquinas de 7 px, "P" blanca y punto de cobertura arriba a la derecha (verde si tiene salidas seguras, rojo si no). Su nombre siempre está visible. Si es origen o destino, una "P" pequeña acompaña al marcador |
 | **Tramo en vista de calle** | Figura de persona en `--br-rueda` sobre círculo blanco (equivalente al muñeco de Street View) |
 
 ---
