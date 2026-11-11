@@ -1,4 +1,4 @@
-import type { Estado, EtiquetaOpcion, Metricas, Viaje } from "./api";
+import type { Estado, EtiquetaOpcion, Metricas, Red, Viaje } from "./api";
 
 const MOTIVOS: Record<string, string> = {
   cierre_por_obras: "Cierre por obras",
@@ -108,4 +108,38 @@ export function etiquetaViaje(v: Viaje, viajes: Viaje[]): string {
   const modalidad = MODALIDAD[v.modalidad] ?? v.modalidad;
   if (iguales(viajes)) return `${v.id} · ${modalidad}`;
   return `${v.id} · ${v.origen} → ${v.destino} · ${v.salida_desde}–${v.salida_hasta} · ${modalidad}`;
+}
+
+export interface FilaRestriccion {
+  tramo: string;
+  sentido: string;
+  motivo: string;
+}
+
+export function restriccionesDelEscenario(red: Pick<Red, "config" | "tramos" | "restricciones">): FilaRestriccion[] {
+  const tramos = new Map(red.tramos.map((t) => [t.id, t]));
+  const sentido = (id: string) => {
+    const t = tramos.get(id);
+    return t ? `${t.origen} → ${t.destino}` : "";
+  };
+  const filas: FilaRestriccion[] = [];
+  for (const t of red.tramos) {
+    if (!t.iluminado) {
+      filas.push({ tramo: t.id, sentido: sentido(t.id), motivo: `Sin iluminación de ${red.config.inicio_noche} a ${red.config.fin_noche}` });
+    }
+  }
+  for (const r of red.restricciones) {
+    const motivo =
+      r.motivo === "no_habilitado_bicicletas"
+        ? motivoRestriccion(r.motivo)
+        : `${motivoRestriccion(r.motivo)} de ${r.inicio} a ${r.fin}`;
+    filas.push({ tramo: r.tramo_id, sentido: sentido(r.tramo_id), motivo });
+  }
+  const noHabilitado = motivoRestriccion("no_habilitado_bicicletas");
+  for (const t of red.tramos) {
+    if (!t.habilitado_bicicletas && !filas.some((f) => f.tramo === t.id && f.motivo === noHabilitado)) {
+      filas.push({ tramo: t.id, sentido: sentido(t.id), motivo: noHabilitado });
+    }
+  }
+  return filas.sort((a, b) => a.tramo.localeCompare(b.tramo));
 }
