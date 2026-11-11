@@ -1,4 +1,4 @@
-import type { Estado } from "./api";
+import type { Estado, EtiquetaOpcion } from "./api";
 
 const MOTIVOS: Record<string, string> = {
   cierre_por_obras: "Cierre por obras",
@@ -33,3 +33,15 @@ export const ETIQUETA_ESTADO: Record<Estado, string> = {
 export function plural(n: number, uno: string, varios: string): string {
   return `${n} ${n === 1 ? uno : varios}`;
 }
+
+export function nivelCongestion(n: number): string {
+  if (n === 0) return "Sin congestión";
+  if (n <= 3) return "Moderada";
+  return "Alta";
+}
+
+export const ETIQUETA_OPCION: Record<EtiquetaOpcion, string> = {
+  recomendada: "Recomendada",
+  mas_rapida: "Más rápida",
+  menos_congestion: "Menos congestión",
+};
