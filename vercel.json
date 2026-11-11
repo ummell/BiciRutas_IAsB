@@ -9,7 +9,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "excludeFiles": "{web/node_modules/**,web/tsconfig.tsbuildinfo,tests/**,resultados/**,.git/**,docker-compose.yml,Dockerfile,web/Dockerfile,web/nginx.conf,.dockerignore}"
+      "excludeFiles": "{web/node_modules/**,web/tsconfig.tsbuildinfo,tests/**,resultados/**,.git/**,.vercel/**}"
     }
   }
 }
