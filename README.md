@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/public/marca/logo.png" alt="Logo de BiciRutas: pin de mapa con una rueda de bicicleta, una colina con un camino y una ciudad" width="140" />
+  <img src="docs/logo-fondo-claro.png" alt="Logo de BiciRutas: pin de mapa con una rueda de bicicleta, una colina con un camino y una ciudad" width="160" />
   <h1>BiciRutas</h1>
   <p><strong>Rutas seguras en bicicleta y reparto de viajes con grafos</strong></p>
   <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
