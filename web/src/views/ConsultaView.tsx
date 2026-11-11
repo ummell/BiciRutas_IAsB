@@ -25,11 +25,20 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
   const [ampliado, setAmpliado] = useState(false);
   const [resultado, setResultado] = useState<ConsultaOut | null>(null);
   const [version, setVersion] = useState(0);
+  const [viajeSel, setViajeSel] = useState("");
+  const [calcular, setCalcular] = useState(false);
 
   useEffect(() => {
     setAmpliado(false);
-    mutacion.mutate({ ampliar: false });
+    if (red.viajes.length) cargarViaje(red.viajes[0].id);
+    else mutacion.mutate({ ampliar: false });
   }, [escenario]);
+
+  useEffect(() => {
+    if (!calcular) return;
+    setCalcular(false);
+    mutacion.mutate({ ampliar: false });
+  }, [calcular, origen, destino, salida, limite, flex]);
 
   const opcionesFlex = useMemo(
     () => (FLEX_BASE.includes(flex) ? FLEX_BASE : [...FLEX_BASE, flex].sort((a, b) => a - b)),
@@ -77,9 +86,12 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
     setHora(v.salida_desde);
     setResultado(null);
     setAmpliado(false);
+    setViajeSel(id);
+    setCalcular(true);
   }
 
   function clicNodo(id: string) {
+    setViajeSel("");
     if (turno === "origen") {
       setOrigen(id);
       if (id === destino) setDestino("");
@@ -124,6 +136,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
       onChange={(e) => {
         alCambiar(e.target.value);
         setResultado(null);
+        setViajeSel("");
       }}
     >
       <option value="" disabled>
@@ -152,7 +165,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
               <select
                 id="viaje"
                 className={CLASE_INPUT}
-                defaultValue=""
+                value={viajeSel}
                 onChange={(e) => e.target.value && cargarViaje(e.target.value)}
               >
                 <option value="">Elegir un viaje…</option>
@@ -217,6 +230,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                     setLimite(aHora(Math.min(aMin(v) + 60, aMin(red.config.fin))));
                   }
                   setResultado(null);
+                  setViajeSel("");
                 }}
               />
             </Campo>
@@ -230,6 +244,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
                 alCambiar={(v) => {
                   setLimite(v);
                   setResultado(null);
+                  setViajeSel("");
                 }}
               />
             </Campo>
@@ -246,6 +261,7 @@ export function ConsultaView({ escenario, red, admin }: { escenario: string; red
               alCambiar={(v) => {
                 setFlex(v);
                 setResultado(null);
+                setViajeSel("");
               }}
             />
             <p className="tnum text-[13px] text-muted">
