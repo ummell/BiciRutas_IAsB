@@ -4,7 +4,7 @@ import type { Asignacion, Estado, LoteLado, Metricas, Red } from "../lib/api";
 import { ApiError } from "../lib/api";
 import { useLote } from "../lib/hooks";
 import { aHora, aMin } from "../lib/time";
-import { ETIQUETA_ESTADO, plural } from "../lib/texto";
+import { ETIQUETA_ESTADO, explicarLote, plural, veces } from "../lib/texto";
 import { LeyendaMapa, NetworkMap } from "../components/NetworkMap";
 import { AnimatedNumber, Card, ErrorAviso, EstadoChip } from "../components/ui";
 
@@ -86,6 +86,7 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
   const refSobre = mRef?.sobrecarga_acumulada_bici_intervalo ?? 0;
   const eqSobre = mEq?.sobrecarga_acumulada_bici_intervalo ?? 0;
   const mejora = refSobre === 0 ? null : (100 * (refSobre - eqSobre)) / refSobre;
+  const explicacion = mRef && mEq ? explicarLote(mRef, mEq) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -128,7 +129,7 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
         <div className={`grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-3 ${consulta.isFetching ? "opacity-70" : ""}`} style={{ transition: "opacity 200ms" }}>
           <Card className="p-5">
             <h2 className="text-[15px] font-bold text-navy">Sobrecarga acumulada</h2>
-            <p className="mt-0.5 text-[13px] text-muted">bici-intervalos de 5 min, menos es mejor</p>
+            <p className="mt-0.5 text-[13px] text-muted">bicis por encima de la capacidad de cada tramo, sumadas cada 5 min · menos es mejor</p>
             <div className="mt-4 flex items-end gap-5">
               <div>
                 <p className="text-[13px] font-semibold text-muted">Sin estrategia</p>
@@ -156,6 +157,7 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
                 </>
               )}
             </p>
+            {explicacion && <p className="mt-2 text-[13px] leading-snug text-muted">{explicacion.sobrecarga}</p>}
           </Card>
 
           <Card className="p-5">
@@ -183,7 +185,17 @@ export function LoteView({ escenario, red }: { escenario: string; red: Red }) {
               <dt className="font-semibold text-ink">Pares saturados</dt>
               <dd className="tnum text-right font-semibold text-muted">{mRef.pares_saturados}</dd>
               <dd className="tnum text-right text-lg font-extrabold text-navy">{mEq.pares_saturados}</dd>
+              <dt className="font-semibold text-ink">Tramo más cargado</dt>
+              <dd className="tnum text-right font-semibold text-muted">{veces(mRef.maxima_relacion_carga_capacidad)}</dd>
+              <dd className="tnum text-right text-lg font-extrabold text-navy">{veces(mEq.maxima_relacion_carga_capacidad)}</dd>
             </dl>
+            {explicacion && explicacion.costos.length > 0 && (
+              <ul className="mt-4 space-y-2 border-t border-line pt-3 text-[13px] leading-snug text-muted">
+                {explicacion.costos.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
       )}
