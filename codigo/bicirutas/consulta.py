@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 
 import networkx as nx
 
@@ -40,21 +41,68 @@ def mejor_individual(esc: Escenario, viaje: dict) -> Recorrido | None:
 
 
 @dataclass
+class Opcion:
+    etiqueta: str
+    recorrido: Recorrido
+    congestion: int
+
+
+@dataclass
 class Consulta:
     estado: str
     recorrido: Recorrido | None
     alternativas: int
+    opciones: list = field(default_factory=list)
+    congestion: int | None = None
 
 
-def consultar(esc: Escenario, viaje: dict) -> Consulta:
+def consultar(esc: Escenario, viaje: dict, ocupacion=None) -> Consulta:
     seguros = candidatos(esc, viaje)
     if not seguros:
         return Consulta("SIN_RUTA_SEGURA", None, 0)
     a_tiempo = [r for r in seguros if r.estado == "A_TIEMPO"]
+
+    if ocupacion is None:
+        if a_tiempo:
+            return Consulta("A_TIEMPO", a_tiempo[0], len(seguros))
+        llega_antes = min(seguros, key=lambda r: (r.llegada, r.duracion_min, r.salida))
+        return Consulta("TARDE", llega_antes, len(seguros))
+
     if a_tiempo:
-        return Consulta("A_TIEMPO", a_tiempo[0], len(seguros))
+        d0 = a_tiempo[0].duracion_min
+        margen = d0 + max(8, math.ceil(0.5 * d0))
+        dentro_margen = [r for r in a_tiempo if r.duracion_min <= margen]
+        recomendada = min(
+            dentro_margen,
+            key=lambda r: (ocupacion.costo_marginal(r), r.duracion_min, r.salida, [p.tramo_id for p in r.pasos]),
+        )
+        mas_rapida = a_tiempo[0]
+        menos_congestion = min(
+            a_tiempo,
+            key=lambda r: (ocupacion.costo_marginal(r), r.duracion_min, r.salida, [p.tramo_id for p in r.pasos]),
+        )
+        opciones = []
+        visto = set()
+        for etiqueta, r in [
+            ("recomendada", recomendada),
+            ("mas_rapida", mas_rapida),
+            ("menos_congestion", menos_congestion),
+        ]:
+            key = tuple(p.tramo_id for p in r.pasos)
+            if key not in visto:
+                visto.add(key)
+                opciones.append(Opcion(etiqueta, r, ocupacion.costo_marginal(r)))
+        return Consulta(
+            "A_TIEMPO", recomendada, len(seguros),
+            opciones=opciones, congestion=ocupacion.costo_marginal(recomendada),
+        )
+
     llega_antes = min(seguros, key=lambda r: (r.llegada, r.duracion_min, r.salida))
-    return Consulta("TARDE", llega_antes, len(seguros))
+    return Consulta(
+        "TARDE", llega_antes, len(seguros),
+        opciones=[Opcion("recomendada", llega_antes, ocupacion.costo_marginal(llega_antes))],
+        congestion=ocupacion.costo_marginal(llega_antes),
+    )
 
 
 def consultar_libre(
