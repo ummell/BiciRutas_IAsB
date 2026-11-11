@@ -387,7 +387,6 @@ export function MapaInteractivo(p: Props) {
         <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl bg-white/95 px-4 py-3 shadow-[0_2px_8px_rgb(25_58_39/0.18)]">
           <p className="flex items-center gap-2 text-[11.5px] font-bold uppercase tracking-wide text-muted">
             <span className="relative inline-flex size-2.5" aria-hidden="true">
-              {!reducir && <span className="pulso-vivo absolute inset-0 rounded-full bg-bosque-600" />}
               <span className="relative size-2.5 rounded-full bg-bosque-600" />
             </span>
             Cobertura a las <span className="tnum text-bosque">{hora}</span>

@@ -250,22 +250,22 @@ export function MapaCanvas(p: Props) {
 
       {p.vivo && p.radioCobertura && (
         <g pointerEvents="none" opacity={hayRuta ? 0.5 : 1} style={{ transition: "opacity 300ms" }}>
-          {p.red.nodos.map((n, i) => {
+          {p.red.nodos.map((n) => {
             const ok = conCobertura.has(n.id);
             return (
               <g key={`cob${n.id}`}>
                 <circle cx={n.x} cy={n.y} r={ok ? p.radioCobertura : p.radioCobertura! * 0.55} fill={`url(#br-cobertura-${ok ? "ok" : "no"})`} />
-                {animar && ok && (
+                {ok && (
                   <circle
                     cx={n.x}
                     cy={n.y}
                     r={p.radioCobertura}
                     fill="none"
                     stroke={c.noche ? c.ciclo : MARCA.bosque600}
-                    strokeWidth={2}
+                    strokeOpacity={0.22}
+                    strokeWidth={1.2}
+                    strokeDasharray="3 5"
                     vectorEffect="non-scaling-stroke"
-                    className="onda-cobertura"
-                    style={{ animationDelay: `${-((i * 0.45) % 3.6)}s` }}
                   />
                 )}
               </g>
@@ -702,7 +702,6 @@ export function MapaCanvas(p: Props) {
                 </motion.g>
               ) : p.vivo && esO ? (
                 <g>
-                  {animar && <circle r={11} fill={MARCA.bosque} className="pulso-vivo" />}
                   <motion.g
                     filter="url(#sombra-pin)"
                     animate={{ scale: hov ? 1.25 : 1 }}

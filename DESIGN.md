@@ -180,7 +180,7 @@ Orden de dibujo, de abajo hacia arriba. Ninguna capa debe tapar a una superior.
 | 2 | Manzanas | `--map-manzana`, esquinas de 4 px, **sin bordes** |
 | 3 | Parques | `--br-salvia-100`; con zoom, siluetas de árboles en `--br-salvia-300` |
 | 4 | Agua | `--map-agua`, bordes orgánicos; nombre en cursiva `--br-salvia` |
-| 4b | Cobertura (solo usuario) | Halo radial `--br-bosque-600` de ~240 m por lugar y onda que se expande en bucle (3,6 s). Un lugar sin salidas seguras a esa hora muestra un halo rojo ladrillo más pequeño y sin onda |
+| 4b | Cobertura (solo usuario) | Halo radial `--br-bosque-600` de ~240 m por lugar con un borde punteado tenue, fijo (sin parpadeo). Un lugar sin salidas seguras a esa hora muestra un halo rojo ladrillo más pequeño y sin onda |
 | 5 | Borde de vías | `--map-borde-via`, 2 px más ancho que la vía a cada lado |
 | 6 | Vías | Blanco (ver 5.1) |
 | 7 | Ciclorrutas | Línea central (ver 5.1) |
@@ -221,7 +221,7 @@ Orden de dibujo, de abajo hacia arriba. Ninguna capa debe tapar a una superior.
 | Marcador | Diseño |
 |---|---|
 | **Destino** | Pin del logo simplificado: silueta verde bosque, arco naranja en la parte superior y punto blanco en el centro. 36 px. Cae con un pequeño rebote al aparecer |
-| **Origen** | Círculo blanco de 16 px con anillo verde bosque de 4 px. Usuario: 22 px con anillo de 5 px y pulso suave |
+| **Origen** | Círculo blanco de 16 px con anillo verde bosque de 4 px. Usuario: 22 px con anillo de 5 px |
 | **Lugar (resto de puntos)** | Por defecto: punto de 8 px en `--br-salvia` con borde blanco. Usuario: estación de 20 px, blanca con anillo salvia y centro `--br-bosque-600`; sin salidas seguras, disco `--estado-bloqueado` con barra blanca (forma, no solo color). Zona táctil de 40 px; crece a 1,3× con resorte al pasar el cursor o enfocar. El nombre aparece con zoom, al pasar el cursor o al enfocar |
 | **Lugar seleccionado** | Anillo `--br-bosque-100` de 26 px alrededor del punto |
 | **Bici en movimiento** | Círculo naranja `--br-rueda` de 22 px con bici blanca y anillo blanco; estela naranja translúcida detrás |
