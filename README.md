@@ -235,11 +235,11 @@ Lo que ias software describió para su proyecto Bike y en qué estado queda en e
 
 | Cargo | Responsable | Funciones |
 |-------|-------------|-----------|
-| Programación | Samuel | Desarrollo de backend y API |
-| Programación | Melissa | Desarrollo de frontend |
-| Programación | Michael | Desarrollador |
-| Análisis | Lina | Análisis de software y QA |
-| Administración y mercadeo | Juliana | Mercadeo, CRM y experiencia de usuario |
+| Programación | Samuel Wilkie | Desarrollo de backend y API |
+| Programación | Melissa Montoya | Desarrollo de frontend |
+| Programación | Michael Moreno | Desarrollador |
+| Análisis | Lina Salinas | Análisis de software y QA |
+| Administración y mercadeo | Juliana Villada | Mercadeo, CRM y experiencia de usuario |
 
 ## Uso de IA
 
