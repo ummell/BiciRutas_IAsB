@@ -75,10 +75,16 @@ describe("mapa de usuario en modo vivo", () => {
   it("dibuja cobertura, flujo y ciclistas cuando hay movimiento", () => {
     movimiento.reducir = false;
     const html = canvas();
-    expect(cuenta(html, 'class="onda-cobertura"')).toBe(2);
+    expect(cuenta(html, 'stroke-dasharray="3 5"')).toBe(2);
     expect(html).toContain("br-cobertura-no");
     expect(html).toContain('class="flujo-via"');
     expect(html).toContain("<animateMotion");
+  });
+
+  it("no tiene círculos que parpadean", () => {
+    const html = canvas();
+    expect(html).not.toContain("onda-cobertura");
+    expect(html).not.toContain("pulso-vivo");
   });
 
   it("apaga toda animación si el sistema pide reducir movimiento", () => {
@@ -95,7 +101,7 @@ describe("mapa de usuario en modo vivo", () => {
   it("marca con forma y texto una estación sin salidas seguras a esa hora", () => {
     const html = canvas({ T02: { tramo_id: "T02", seguro: false, motivo: "Cierre temporal" } });
     expect(html).toContain('aria-label="Plazoleta, destino, sin salidas seguras a esta hora"');
-    expect(cuenta(html, 'class="onda-cobertura"')).toBe(1);
+    expect(cuenta(html, 'stroke-dasharray="3 5"')).toBe(1);
   });
 
   it("muestra los bici-parqueaderos como estaciones con P", () => {

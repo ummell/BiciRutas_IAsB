@@ -194,48 +194,16 @@
   }
 }
 
-@keyframes onda-cobertura {
-  0% {
-    transform: scale(0.15);
-    opacity: 0.75;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
 @keyframes flujo-via {
   to {
     stroke-dashoffset: calc(var(--periodo) * -1);
   }
 }
-@keyframes pulso-vivo {
-  0% {
-    transform: scale(1);
-    opacity: 0.45;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-.onda-cobertura {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: onda-cobertura 3.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-}
 .flujo-via {
   animation: flujo-via var(--dur, 1.4s) linear infinite;
 }
-.pulso-vivo {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pulso-vivo 1.8s ease-out infinite;
-}
 @media (prefers-reduced-motion: reduce) {
-  .onda-cobertura,
-  .flujo-via,
-  .pulso-vivo {
+  .flujo-via {
     animation: none;
   }
 }
