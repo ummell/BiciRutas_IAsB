@@ -13,7 +13,7 @@
 
 > **BiciRutas** recomienda rutas seguras en bicicleta sobre un grafo dirigido, sugiere a qué hora salir y reparte un lote de viajes para reducir la congestión del conjunto, en lugar de mandar a todos por el mismo corredor rápido. Avisa qué viajes llegarán tarde y cuáles no tienen ruta segura, y compara el resultado contra una referencia sin estrategia.
 
-> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa viven en `gestion/`, dentro de este repositorio.
+> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa no se versionan: como pide el kit, van en `gestion/`, que está en `.gitignore` (ver [Datos de la empresa](#datos-de-la-empresa)).
 
 ---
 
@@ -85,7 +85,7 @@ Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULA
 
 ```text
 BiciRutas_IAsB/
-    ├── gestion/                # Material de la empresa (datos, escenarios, reglas, evaluador)
+    ├── gestion/                # Material de la empresa, copiado del kit; no se versiona
     ├── codigo/bicirutas/
     │   ├── datos.py            # Carga de JSON y construcción del grafo
     │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
@@ -117,6 +117,12 @@ BiciRutas_IAsB/
 ## Desarrollo
 
 Requiere **Python 3.10+** (se usa 3.12) y **uv**.
+
+### Datos de la empresa
+
+El kit exige que los datos vayan fuera del repositorio, así que `gestion/` está en `.gitignore`. Antes de ejecutar, copia la carpeta del paquete BiciRutas (la que trae `datos/`, `escenarios/`, `documentacion/` y `herramientas/`) en `mi-equipo/gestion/`, o define `BICIRUTAS_PAQUETE` con su ruta. Sin esos datos no arrancan la API ni los tests.
+
+> **Aviso para el equipo:** hasta el commit `9c066f3` los datos sí se versionaban. Al hacer `pull` de este cambio, git borra `gestion/` de tu copia local. Respáldala antes o vuelve a copiarla desde el kit.
 
 ```bash
 uv venv --python 3.12 .venv
@@ -167,7 +173,7 @@ Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `htt
 
 ### Variables de entorno
 
-Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, dentro del repositorio. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
+Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, que no se versiona. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
 
 ---
 
