@@ -19,6 +19,7 @@ import {
 import { motivoBloqueo } from "../lib/texto";
 import { aHora, aMin } from "../lib/time";
 import { MapaCanvas, type Capas } from "./MapaCanvas";
+import { AnimatedNumber } from "./ui";
 import { VistaCalle } from "./VistaCalle";
 
 const PESO = 1000;
@@ -221,7 +222,7 @@ export function MapaInteractivo(p: Props) {
   const salidaR = pasos.length ? pasos[0].entrada : null;
   const llegadaR = pasos.length ? pasos[pasos.length - 1].salida : null;
   const minutoBici =
-    minAnim ?? (salidaR && llegadaR && aMin(hora) >= aMin(salidaR) && aMin(hora) <= aMin(llegadaR) ? aMin(hora) : null);
+    minAnim ?? (!p.simple && salidaR && llegadaR && aMin(hora) >= aMin(salidaR) && aMin(hora) <= aMin(llegadaR) ? aMin(hora) : null);
 
   function recorrer() {
     if (!salidaR || !llegadaR) return;
@@ -288,6 +289,10 @@ export function MapaInteractivo(p: Props) {
   const nocheAncho = ((aMin(cfg.fin_noche) - aMin(cfg.inicio_noche)) / span) * 100;
   const bloqueados = (estadoQ.data?.tramos ?? []).filter((t) => !t.seguro).length;
   const puedeElegir = Boolean(p.onOrigen || p.onDestino);
+  const vivo = p.modo === "usuario";
+  const seguros = red.tramos.filter((t) => t.tipo !== "via_no_habilitada" && estado[t.id]?.seguro !== false);
+  const conectados = new Set(seguros.map((t) => t.origen)).size;
+  const metrosSeguros = seguros.reduce((s, t) => s + t.distancia_m, 0);
 
   const chips: [keyof Capas, string][] =
     p.modo === "admin"
@@ -354,6 +359,8 @@ export function MapaInteractivo(p: Props) {
           minutoBici={minutoBici}
           calor={p.calor}
           calorMax={p.calorMax}
+          vivo={vivo}
+          radioCobertura={240 / mpu}
         />
       )}
 
@@ -368,6 +375,38 @@ export function MapaInteractivo(p: Props) {
         </div>
         <AnimatePresence>{!calleGrande && vistaCalle}</AnimatePresence>
       </div>
+      )}
+
+      {vivo && p.simple && (
+        <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl bg-white/95 px-4 py-3 shadow-[0_2px_8px_rgb(25_58_39/0.18)]">
+          <p className="flex items-center gap-2 text-[11.5px] font-bold uppercase tracking-wide text-muted">
+            <span className="relative inline-flex size-2.5" aria-hidden="true">
+              {!reducir && <span className="pulso-vivo absolute inset-0 rounded-full bg-bosque-600" />}
+              <span className="relative size-2.5 rounded-full bg-bosque-600" />
+            </span>
+            Cobertura a las <span className="tnum text-bosque">{hora}</span>
+          </p>
+          <dl className="mt-2 flex gap-5">
+            <div>
+              <dd className="font-display text-[22px] font-extrabold leading-none text-bosque">
+                <AnimatedNumber value={conectados} />
+                <span className="text-[14px] text-muted">/{red.nodos.length}</span>
+              </dd>
+              <dt className="mt-1 text-[11.5px] font-semibold text-muted">estaciones conectadas</dt>
+            </div>
+            <div>
+              <dd className="font-display text-[22px] font-extrabold leading-none text-bosque">
+                <AnimatedNumber value={seguros.length} />
+                <span className="text-[14px] text-muted">/{red.tramos.length}</span>
+              </dd>
+              <dt className="mt-1 text-[11.5px] font-semibold text-muted">tramos seguros</dt>
+            </div>
+            <div>
+              <dd className="font-display tnum text-[22px] font-extrabold leading-none text-bosque">{formatoDistancia(metrosSeguros)}</dd>
+              <dt className="mt-1 text-[11.5px] font-semibold text-muted">de red segura</dt>
+            </div>
+          </dl>
+        </div>
       )}
 
       {pasos.length > 0 && !p.simple && (
@@ -389,7 +428,7 @@ export function MapaInteractivo(p: Props) {
 
       {posNodo && nodo && (
         <div
-          className="absolute z-20 w-60 -translate-x-1/2 -translate-y-[calc(100%+22px)] rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgb(25_58_39/0.2)]"
+          className="absolute z-20 w-64 -translate-x-1/2 -translate-y-[calc(100%+28px)] rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgb(25_58_39/0.2)]"
           style={{ left: posNodo.left, top: posNodo.top }}
         >
           <div className="flex items-start justify-between gap-2">
@@ -419,7 +458,7 @@ export function MapaInteractivo(p: Props) {
                   p.onOrigen?.(nodo.id);
                   setNodoSel(null);
                 }}
-                className="rounded-full border-[1.5px] border-salvia px-2 py-1.5 text-[12.5px] font-bold text-bosque hover:bg-bosque-100"
+                className="rounded-full border-[1.5px] border-salvia px-2 py-2 text-[13.5px] font-bold text-bosque hover:bg-bosque-100"
               >
                 Salir desde aquí
               </button>
@@ -429,7 +468,7 @@ export function MapaInteractivo(p: Props) {
                   p.onDestino?.(nodo.id);
                   setNodoSel(null);
                 }}
-                className="rounded-full bg-bosque px-2 py-1.5 text-[12.5px] font-bold text-white hover:bg-bosque-900"
+                className="rounded-full bg-bosque px-2 py-2 text-[13.5px] font-bold text-white hover:bg-bosque-900"
               >
                 Ir hasta aquí
               </button>
@@ -459,7 +498,7 @@ export function MapaInteractivo(p: Props) {
           {estado[tHover.id]?.seguro === false && (
             <p className="font-semibold text-[#f3b4ac]">Bloqueado: {motivoBloqueo(estado[tHover.id].motivo)}</p>
           )}
-          <p className="mt-0.5 text-[11px] text-white/55">Clic para ver la calle</p>
+          {!p.simple && <p className="mt-0.5 text-[11px] text-white/55">Clic para ver la calle</p>}
         </div>
       )}
 
@@ -515,21 +554,21 @@ export function MapaInteractivo(p: Props) {
         </div>
         )}
         <BotonMapa onClick={recentrar} etiqueta={pasos.length ? "Encuadrar la ruta" : "Ver toda la red"}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
             <circle cx="10" cy="10" r="3.2" fill="currentColor" stroke="none" />
             <circle cx="10" cy="10" r="6.5" />
             <path d="M10 1.5v2.5M10 16v2.5M1.5 10H4M16 10h2.5" />
           </svg>
         </BotonMapa>
         <div className="overflow-hidden rounded-xl bg-white shadow-[0_1px_4px_rgb(25_58_39/0.2)]">
-          <button type="button" onClick={() => zoom(1 / 1.5)} className="grid size-10 place-items-center text-bosque hover:bg-[#f1efe8]" aria-label="Acercar">
-            <svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <button type="button" onClick={() => zoom(1 / 1.5)} className="grid size-12 place-items-center text-bosque transition-colors hover:bg-[#f1efe8] active:bg-bosque-100" aria-label="Acercar">
+            <svg width="18" height="18" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
               <path d="M8 2v12M2 8h12" />
             </svg>
           </button>
           <div className="mx-2 h-px bg-[#ece7dc]" />
-          <button type="button" onClick={() => zoom(1.5)} className="grid size-10 place-items-center text-bosque hover:bg-[#f1efe8]" aria-label="Alejar">
-            <svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <button type="button" onClick={() => zoom(1.5)} className="grid size-12 place-items-center text-bosque transition-colors hover:bg-[#f1efe8] active:bg-bosque-100" aria-label="Alejar">
+            <svg width="18" height="18" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
               <path d="M2 8h12" />
             </svg>
           </button>
@@ -645,7 +684,7 @@ function BotonMapa({ onClick, etiqueta, children, activo }: { onClick: () => voi
       onClick={onClick}
       aria-label={etiqueta}
       title={etiqueta}
-      className={`grid size-10 place-items-center rounded-xl shadow-[0_1px_4px_rgb(25_58_39/0.2)] transition-colors ${
+      className={`grid size-12 place-items-center rounded-xl shadow-[0_1px_4px_rgb(25_58_39/0.2)] transition-colors ${
         activo ? "bg-bosque-100 text-bosque" : "bg-white text-bosque hover:bg-[#f1efe8]"
       }`}
     >

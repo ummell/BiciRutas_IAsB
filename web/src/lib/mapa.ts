@@ -33,6 +33,7 @@ export const MARCA = {
   bosque100: "#e3ece5",
   rueda: "#e07a2b",
   rueda700: "#a34e16",
+  rueda100: "#fcebdd",
   salvia: "#667f63",
   bloqueado: "#b5322a",
 };
