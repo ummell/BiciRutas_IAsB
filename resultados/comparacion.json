@@ -16,15 +16,15 @@
   {
     "escenario": "02_demanda_concentrada",
     "sobrecarga_referencia": 348,
-    "sobrecarga_equipo": 143,
-    "mejora_pct": 58.9,
+    "sobrecarga_equipo": 138,
+    "mejora_pct": 60.3,
     "a_tiempo": 44,
     "tarde": 16,
     "sin_ruta": 0,
     "tardanza_referencia": 0,
-    "tardanza_equipo": 89,
+    "tardanza_equipo": 87,
     "minutos_viaje_referencia": 720,
-    "minutos_viaje_equipo": 1242,
+    "minutos_viaje_equipo": 1268,
     "evaluador_ok": true
   },
   {

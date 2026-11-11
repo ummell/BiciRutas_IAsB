@@ -6,3 +6,30 @@ __pycache__/
 node_modules/
 dist/
 .DS_Store
+*.tsbuildinfo
+.vercel
+
+# gestion/: solo se versiona lo que necesitan la API, los tests y el evaluador
+gestion/*
+!gestion/datos/
+gestion/datos/*
+!gestion/datos/configuracion.json
+!gestion/datos/nodos.json
+!gestion/datos/tramos.json
+!gestion/escenarios/
+gestion/escenarios/*/*
+!gestion/escenarios/indice.json
+!gestion/escenarios/*/
+!gestion/escenarios/*/condiciones.json
+!gestion/escenarios/*/restricciones.json
+!gestion/escenarios/*/viajes.json
+!gestion/herramientas/
+gestion/herramientas/*
+!gestion/herramientas/evaluar.py
+!gestion/herramientas/modelo.py
+!gestion/herramientas/referencia.py
+
+# Material interno de la demo y herramientas locales
+GUION_DEMO.md
+.atl/
+CLAUDE.md

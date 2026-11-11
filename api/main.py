@@ -1,13 +1,18 @@
+import json
+import tempfile
 from functools import lru_cache
+from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from bicirutas.consulta import consultar
+from bicirutas.consulta import candidatos, consultar, motivo_sin_ruta, rutas_distintas, salidas_permitidas
 from bicirutas.datos import cargar_escenario, listar_escenarios
 from bicirutas.estrategia import PESO_CONGESTION, repartir
-from bicirutas.lote import construir_ocupacion, metricas, referencia_lote
+from bicirutas.generar import validar_con_evaluador
+from bicirutas.lote import a_resultado_json, construir_ocupacion, metricas, referencia_lote
 from bicirutas.modelo import RutaInvalida, pasar_tramo
 from bicirutas.tiempo import a_hora, a_minutos
 
@@ -42,6 +47,17 @@ def _recorrido(r) -> dict | None:
         tardanza_min=r.tardanza_min,
         pasos=[dict(tramo_id=p.tramo_id, entrada=a_hora(p.entrada), salida=a_hora(p.salida)) for p in r.pasos],
     )
+
+
+@lru_cache(maxsize=32)
+def _reparto(escenario_id: str, peso: int):
+    esc = _escenario(escenario_id)
+    return repartir(esc, peso_congestion=peso)
+
+
+@lru_cache(maxsize=16)
+def _ocupacion(escenario_id: str):
+    return construir_ocupacion(_escenario(escenario_id), _reparto(escenario_id, PESO_CONGESTION))
 
 
 def _asignaciones(asignaciones: list) -> list:
@@ -84,6 +100,7 @@ class ConsultaIn(BaseModel):
     salida_desde: str = Field(pattern=HORA)
     llegada_limite: str = Field(pattern=HORA)
     salida_hasta: str | None = Field(default=None, pattern=HORA)
+    criterio: Literal["rapido", "equilibrado"] = "rapido"
 
 
 @app.post("/api/escenarios/{escenario_id}/consulta")
@@ -104,14 +121,40 @@ def consulta(escenario_id: str, datos: ConsultaIn):
     )
     if a_minutos(viaje["salida_hasta"]) < a_minutos(viaje["salida_desde"]):
         raise HTTPException(422, "salida_hasta no puede ser anterior a salida_desde")
-    c = consultar(esc, viaje)
-    return dict(estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido))
+    if datos.criterio == "equilibrado":
+        ocupacion = _ocupacion(escenario_id)
+        c = consultar(esc, viaje, ocupacion)
+        out = dict(
+            estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido),
+            criterio=datos.criterio, congestion=c.congestion,
+            opciones=[
+                dict(etiqueta=o.etiqueta, congestion=o.congestion, recorrido=_recorrido(o.recorrido))
+                for o in c.opciones
+            ],
+        )
+    else:
+        c = consultar(esc, viaje)
+        out = dict(estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido))
+    out["rutas_seguras"] = rutas_distintas(candidatos(esc, viaje))
+    out["salidas_evaluadas"] = len(salidas_permitidas(esc, viaje))
+    if c.estado == "SIN_RUTA_SEGURA":
+        out["motivo_sin_ruta"] = motivo_sin_ruta(esc, viaje)
+    return out
+
+
+def _evaluador_ok(esc, asignaciones: list) -> bool:
+    # Runs the official evaluator on the plan shown, so the page can prove it is valid.
+    with tempfile.TemporaryDirectory() as carpeta:
+        archivo = Path(carpeta) / f"{esc.id}.json"
+        plan = a_resultado_json(esc, asignaciones, "BiciRutas")
+        archivo.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+        return validar_con_evaluador(esc.id, archivo)
 
 
 @lru_cache(maxsize=32)
 def _lote(escenario_id: str, peso: int):
     esc = _escenario(escenario_id)
-    propio, base = repartir(esc, peso_congestion=peso), referencia_lote(esc)
+    propio, base = _reparto(escenario_id, peso), referencia_lote(esc)
     return dict(
         escenario_id=esc.id,
         peso_congestion=peso,
@@ -119,6 +162,7 @@ def _lote(escenario_id: str, peso: int):
             metricas=metricas(esc, propio),
             asignaciones=_asignaciones(propio),
             ocupacion=_mapa_calor(esc, propio),
+            evaluador_ok=_evaluador_ok(esc, propio),
         ),
         referencia=dict(
             metricas=metricas(esc, base),
@@ -131,6 +175,29 @@ def _lote(escenario_id: str, peso: int):
 @app.get("/api/escenarios/{escenario_id}/lote")
 def lote(escenario_id: str, peso: int = Query(PESO_CONGESTION, ge=1, le=100000)):
     return _lote(escenario_id, peso)
+
+
+@lru_cache(maxsize=16)
+def _linea_tiempo(escenario_id: str):
+    esc = _escenario(escenario_id)
+    inicio = a_minutos(esc.config["inicio"])
+    fin = a_minutos(esc.config["fin"])
+    paso = esc.config["intervalo_min"]
+    horas = []
+    for minuto in range(inicio, fin, paso):
+        bloqueados = []
+        for tid in esc.tramos:
+            try:
+                pasar_tramo(esc, tid, minuto)
+            except RutaInvalida as exc:
+                bloqueados.append(dict(tramo_id=tid, motivo=str(exc)))
+        horas.append(dict(hora=a_hora(minuto), bloqueados=bloqueados))
+    return dict(intervalo_min=paso, horas=horas)
+
+
+@app.get("/api/escenarios/{escenario_id}/linea-tiempo")
+def linea_tiempo(escenario_id: str):
+    return _linea_tiempo(escenario_id)
 
 
 @app.get("/api/escenarios/{escenario_id}/estado-tramos")

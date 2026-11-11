@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="docs/logo-fondo-claro.png" alt="Logo de BiciRutas: pin de mapa con una rueda de bicicleta, una colina con un camino y una ciudad" width="160" />
   <h1>BiciRutas</h1>
   <p><strong>Rutas seguras en bicicleta y reparto de viajes con grafos</strong></p>
   <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
@@ -13,7 +14,7 @@
 
 > **BiciRutas** recomienda rutas seguras en bicicleta sobre un grafo dirigido, sugiere a qué hora salir y reparte un lote de viajes para reducir la congestión del conjunto, en lugar de mandar a todos por el mismo corredor rápido. Avisa qué viajes llegarán tarde y cuáles no tienen ruta segura, y compara el resultado contra una referencia sin estrategia.
 
-> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa viven en `gestion/`, dentro de este repositorio.
+> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. De los datos de la empresa solo se versionan en `gestion/` los archivos necesarios para ejecutar el prototipo; el resto del kit está en `.gitignore` (ver [Datos de la empresa](#datos-de-la-empresa)).
 
 ---
 
@@ -39,6 +40,8 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
 ## Características
 
 - **Consulta de ruta:** origen, destino y hora límite devuelven recorrido, salida y llegada.
+- **Bici-parqueaderos (vista de usuario):** Mercado Central (N04) y Centro Cultural (N08) se muestran como bici-parqueaderos de ejemplo, con cupos y horario. Desde cualquier lugar, "Ir al parqueadero más cercano" elige el más cercano por distancia sobre el grafo dirigido, sin usar vías no habilitadas. Se definen en `web/src/lib/parqueaderos.ts`; los datos de la empresa en `gestion/` no cambian.
+- **Ruta equilibrada (vista de usuario):** entre las rutas que llegan a tiempo, recomienda la de menor congestión que no tarde mucho más que la más rápida, y muestra hasta tres opciones (recomendada, más rápida, menos congestión) con su nivel de congestión.
 - **Seguridad no negociable:** una ruta con un tramo excluido es inválida. Se excluye por cierre, riesgo vial, tramo no habilitado o noche sin iluminación (18:00 a 21:00).
 - **Reparto de viajes:** elige rutas y salidas considerando la carga que generan las otras recomendaciones.
 - **Estados claros:** `A_TIEMPO`, `TARDE` o `SIN_RUTA_SEGURA`. Los viajes tardíos siguen en la simulación y se muestran.
@@ -48,6 +51,7 @@ No incluye autenticación real, GPS, pagos, préstamos de bicicletas ni desplieg
   - **Usuario** (por defecto): solo la consulta de ruta, sobre el escenario `01_viaje_normal`. No ve escenarios de prueba, lote, comparación con la referencia ni la carga de viajes de muestra.
   - **Administración:** ve todo, incluidos los seis escenarios, el lote y la comparación.
 - **Web con Motion:** trazo animado de la ruta sobre el plano, transiciones entre vistas y contadores de sobrecarga.
+- **Identidad visual:** paleta, tipografía (Bricolage Grotesque + Inter) y reglas del mapa definidas a partir del logo en [`DESIGN.md`](DESIGN.md). El mapa interactivo de la vista de usuario tiene zoom, modo noche, capa de cobertura por estación, flujo animado en los tramos seguros y la bici recorriendo la ruta. Administración usa el plano de la red con su control de hora.
 
 ---
 
@@ -82,7 +86,7 @@ Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULA
 
 ```text
 BiciRutas_IAsB/
-    ├── gestion/                # Material de la empresa (datos, escenarios, reglas, evaluador)
+    ├── gestion/                # Datos y evaluador del kit; solo se versionan los archivos necesarios
     ├── codigo/bicirutas/
     │   ├── datos.py            # Carga de JSON y construcción del grafo
     │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
@@ -115,6 +119,12 @@ BiciRutas_IAsB/
 
 Requiere **Python 3.10+** (se usa 3.12) y **uv**.
 
+### Datos de la empresa
+
+De la carpeta `gestion/` (paquete de la empresa) solo se versionan los 25 archivos que necesitan la API, los tests y el evaluador: `datos/{nodos,tramos,configuracion}.json`, `escenarios/indice.json`, `condiciones.json`, `restricciones.json` y `viajes.json` de cada escenario, y `herramientas/{evaluar,modelo,referencia}.py`. El resto del kit (PDF, documentación, ejemplos, plantillas, CSV, SVG y `validar_datos.py`) queda en `.gitignore`; consúltalo en el paquete original. Si el paquete está en otro lugar, define `BICIRUTAS_PAQUETE` con su ruta.
+
+> **Aviso para el equipo:** durante un tiempo `gestion/` no se versionó. Al hacer `pull` de este cambio, git puede borrar de tu copia local los archivos que dejaron de versionarse. Respáldala antes o vuelve a copiarla desde el kit.
+
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
@@ -133,8 +143,9 @@ PYTHONPATH=codigo:. .venv/bin/python -m uvicorn api.main:app --port 8000
 | GET | `/api/escenarios` | Índice de escenarios |
 | GET | `/api/escenarios/{id}/red` | Nodos, tramos, restricciones y viajes |
 | POST | `/api/escenarios/{id}/consulta` | Ruta, salida y llegada de un viaje suelto |
-| GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor |
+| GET | `/api/escenarios/{id}/lote?peso=` | Reparto del escenario frente a la referencia, con mapa de calor y `evaluador_ok` (resultado del evaluador oficial sobre el plan) |
 | GET | `/api/escenarios/{id}/estado-tramos?hora=` | Qué tramos se pueden usar a esa hora y por qué no |
+| GET | `/api/escenarios/{id}/linea-tiempo` | Tramos bloqueados en cada intervalo de 5 minutos, para ubicar los cambios del día |
 
 Generar los 6 resultados, validarlos con el evaluador y armar la comparación:
 
@@ -156,13 +167,28 @@ Levantar la aplicación web (requiere Node.js y pnpm, y la API corriendo en el p
 pnpm --dir web install
 pnpm --dir web dev          # http://localhost:5173, reenvía /api a la API local
 pnpm --dir web build        # comprobación de tipos y build de producción
+pnpm --dir web test         # tests de la web: mapa por rol, modo vivo y movimiento reducido
 ```
 
 Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `http://localhost:5173/#lote/02_demanda_concentrada`.
 
+### Ejecutar con Docker
+
+Con Docker Engine y el complemento Docker Compose instalados, inicia la aplicación completa desde la raíz del repositorio:
+
+```bash
+docker compose up --build
+```
+
+Abre `http://localhost:8080`. Compose levanta la API Python y el frontend React; Nginx sirve la aplicación y reenvía las solicitudes `/api` a la API. Para detenerla, ejecuta `docker compose down`.
+
+### Despliegue en Vercel
+
+El despliegue en línea usa Vercel sin servidor (configuración en `vercel.json`): la web se compila a `web/dist` y la API FastAPI corre como función desde `api/index.py`, que expone la app de `api/main.py` y las solicitudes `/api/*` se redirigen a ella. `api/index.py` busca los datos en `gestion/`, y los archivos necesarios están versionados (ver [Datos de la empresa](#datos-de-la-empresa)).
+
 ### Variables de entorno
 
-Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, dentro del repositorio. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
+Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
 
 ---
 
@@ -173,7 +199,7 @@ Generada con `bicirutas.generar` (detalle en `resultados/comparacion.json`). Los
 | Escenario | Sobrecarga referencia | Sobrecarga equipo | Mejora | A tiempo | Tarde | Sin ruta segura |
 |-----------|----------------------:|------------------:|-------:|---------:|------:|----------------:|
 | 01_viaje_normal | 36 | 0 | 100 % | 8 | 0 | 0 |
-| 02_demanda_concentrada | 348 | 143 | 58,9 % | 44 | 16 | 0 |
+| 02_demanda_concentrada | 348 | 138 | 60,3 % | 44 | 16 | 0 |
 | 03_cierre_temporal | 48 | 0 | 100 % | 10 | 0 | 0 |
 | 04_recorrido_nocturno | 6 | 0 | 100 % | 10 | 0 | 0 |
 | 05_destino_sin_acceso | 0 | 0 | no aplica | 0 | 0 | 3 |
@@ -187,9 +213,23 @@ En el escenario 02, la mejora de congestión se paga con 16 viajes tardíos (la 
 
 - El código del equipo no importa el modelo oficial: se reimplementó para poder explicarlo. Los tests lo contrastan con el oficial en cada tramo y cada minuto de los seis escenarios.
 - La carga inicial afecta el tiempo estimado; los viajes asignados afectan la congestión pero no recalculan duraciones. Es una simplificación del modelo.
-- La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`). Por defecto la congestión manda y la tardanza solo desempata, como pide el reto. Bajar el peso reduce los viajes tardíos a cambio de algo más de sobrecarga.
+- La estrategia tiene un peso entre congestión y tardanza (`peso_congestion`): cada bici-intervalo de sobrecarga cuesta lo mismo que 3 min de tardanza. Elegimos 3 probando pesos de 1 a 1000 con el evaluador oficial: es el que deja la menor sobrecarga en los seis escenarios (en 02, 138 frente a 143 con peso 1000; los otros cinco quedan idénticos). La búsqueda es voraz, así que un peso mayor no siempre da menos sobrecarga. La vista Lote muestra las métricas de cada nivel para comparar.
 - Los roles solo cambian lo que muestra la interfaz. No hay contraseña y la API sigue abierta, así que cualquiera puede cambiarse a Administración. Proteger de verdad exigiría una clave en `.env` y respuestas 403 en la API.
+- **Consulta equilibrada.** Con `criterio: "equilibrado"` (lo envía la vista de usuario), la consulta toma las rutas seguras que llegan a tiempo, fija un margen de `d0 + max(8, ceil(0.5 × d0))` minutos sobre la más rápida (`d0`) y elige la de menor costo marginal de congestión frente al reparto del equipo en ese escenario y a esa hora. Ejemplo en `01_viaje_normal`, de N01 a N05 a las 17:00: la más rápida tarda 12 min con 6 bici-intervalos de sobrecarga; la recomendada tarda 20 min con 2. Sin `criterio`, la consulta devuelve la más rápida como antes, igual que la referencia oficial. El lote y los JSON de `resultados/` no usan esta consulta, así que la entrega evaluada no cambia.
 - No es una solución óptima global ni un simulador de tráfico real.
+
+## Necesidades de la empresa
+
+Lo que ias software describió para su proyecto Bike y en qué estado queda en este prototipo:
+
+| Necesidad | Estado |
+|---|---|
+| Ruta segura de A a B, evitando zonas peligrosas | Hecho: exclusión por cierre, riesgo vial, tramo no habilitado e iluminación según la hora |
+| Saber cuándo salir y cuánto se tarda | Hecho: salida, llegada y duración por tramo |
+| Ruta idónea por hora, congestión y seguridad, no solo la más corta | Hecho: consulta equilibrada y reparto del lote |
+| Rutas alternativas | Hecho: hasta tres opciones con su congestión |
+| Estaciones y bici-parqueaderos reales | Parcial: la red es ficticia por diseño del reto; el mapa de usuario muestra los nodos como estaciones con su cobertura y dos bici-parqueaderos de ejemplo con "ir al más cercano" |
+| Registro de bici-usuarios y bicicletas, georreferenciación de recorridos, otras ciudades, patinetas eléctricas | Fuera del alcance del reto (no hay autenticación, GPS ni datos reales). Queda como hoja de ruta: cargar estaciones reales como nodos, sumar usuarios y bicicletas, y aplicar la misma lógica de grafo a otras ciudades |
 
 ## Equipo y tareas
 

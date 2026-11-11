@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 
 import networkx as nx
 
 from .datos import Escenario
 from .modelo import Recorrido, RutaInvalida, simular_recorrido
-from .tiempo import a_minutos
+from .tiempo import a_hora, a_minutos
 
 
 def rutas_simples(esc: Escenario, origen: str, destino: str) -> list:
@@ -34,9 +35,39 @@ def candidatos(esc: Escenario, viaje: dict) -> list[Recorrido]:
     return seguros
 
 
+def motivo_sin_ruta(esc: Escenario, viaje: dict) -> str:
+    """Why a trip has no safe route: 'horizonte', 'sin_acceso' or 'bloqueo'."""
+    for tramos in rutas_simples(esc, viaje["origen"], viaje["destino"]):
+        for salida in salidas_permitidas(esc, viaje):
+            try:
+                simular_recorrido(esc, viaje, salida, tramos)
+            except RutaInvalida as e:
+                if "horizonte" in str(e):
+                    return "horizonte"
+    paso = esc.config["intervalo_min"]
+    todo_el_dia = dict(
+        viaje,
+        salida_desde=esc.config["inicio"],
+        salida_hasta=a_hora(a_minutos(esc.config["fin"]) - paso),
+        llegada_limite=esc.config["fin"],
+    )
+    return "bloqueo" if candidatos(esc, todo_el_dia) else "sin_acceso"
+
+
+def rutas_distintas(recorridos: list[Recorrido]) -> int:
+    return len({tuple(p.tramo_id for p in r.pasos) for r in recorridos})
+
+
 def mejor_individual(esc: Escenario, viaje: dict) -> Recorrido | None:
     seguros = candidatos(esc, viaje)
     return seguros[0] if seguros else None
+
+
+@dataclass
+class Opcion:
+    etiqueta: str
+    recorrido: Recorrido
+    congestion: int
 
 
 @dataclass
@@ -44,17 +75,57 @@ class Consulta:
     estado: str
     recorrido: Recorrido | None
     alternativas: int
+    opciones: list = field(default_factory=list)
+    congestion: int | None = None
 
 
-def consultar(esc: Escenario, viaje: dict) -> Consulta:
+def consultar(esc: Escenario, viaje: dict, ocupacion=None) -> Consulta:
     seguros = candidatos(esc, viaje)
     if not seguros:
         return Consulta("SIN_RUTA_SEGURA", None, 0)
     a_tiempo = [r for r in seguros if r.estado == "A_TIEMPO"]
+
+    if ocupacion is None:
+        if a_tiempo:
+            return Consulta("A_TIEMPO", a_tiempo[0], len(seguros))
+        llega_antes = min(seguros, key=lambda r: (r.llegada, r.duracion_min, r.salida))
+        return Consulta("TARDE", llega_antes, len(seguros))
+
     if a_tiempo:
-        return Consulta("A_TIEMPO", a_tiempo[0], len(seguros))
+        d0 = a_tiempo[0].duracion_min
+        margen = d0 + max(8, math.ceil(0.5 * d0))
+        dentro_margen = [r for r in a_tiempo if r.duracion_min <= margen]
+        recomendada = min(
+            dentro_margen,
+            key=lambda r: (ocupacion.costo_marginal(r), r.duracion_min, r.salida, [p.tramo_id for p in r.pasos]),
+        )
+        mas_rapida = a_tiempo[0]
+        menos_congestion = min(
+            a_tiempo,
+            key=lambda r: (ocupacion.costo_marginal(r), r.duracion_min, r.salida, [p.tramo_id for p in r.pasos]),
+        )
+        opciones = []
+        visto = set()
+        for etiqueta, r in [
+            ("recomendada", recomendada),
+            ("mas_rapida", mas_rapida),
+            ("menos_congestion", menos_congestion),
+        ]:
+            key = tuple(p.tramo_id for p in r.pasos)
+            if key not in visto:
+                visto.add(key)
+                opciones.append(Opcion(etiqueta, r, ocupacion.costo_marginal(r)))
+        return Consulta(
+            "A_TIEMPO", recomendada, len(seguros),
+            opciones=opciones, congestion=ocupacion.costo_marginal(recomendada),
+        )
+
     llega_antes = min(seguros, key=lambda r: (r.llegada, r.duracion_min, r.salida))
-    return Consulta("TARDE", llega_antes, len(seguros))
+    return Consulta(
+        "TARDE", llega_antes, len(seguros),
+        opciones=[Opcion("recomendada", llega_antes, ocupacion.costo_marginal(llega_antes))],
+        congestion=ocupacion.costo_marginal(llega_antes),
+    )
 
 
 def consultar_libre(

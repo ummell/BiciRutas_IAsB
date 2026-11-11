@@ -14,10 +14,14 @@ export const useEstadoTramos = (id: string, hora: string) =>
     staleTime: Infinity,
   });
 
-export const useLote = (id: string, peso: number) =>
+export const useLineaTiempo = (id: string) =>
+  useQuery({ queryKey: ["linea", id], queryFn: () => api.lineaTiempo(id), staleTime: Infinity });
+
+export const useLote = (id: string, peso: number, enabled = true) =>
   useQuery({
     queryKey: ["lote", id, peso],
     queryFn: () => api.lote(id, peso),
+    enabled,
     placeholderData: keepPreviousData,
     staleTime: Infinity,
   });
