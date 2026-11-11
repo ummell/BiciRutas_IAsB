@@ -14,7 +14,7 @@
 
 > **BiciRutas** recomienda rutas seguras en bicicleta sobre un grafo dirigido, sugiere a qué hora salir y reparte un lote de viajes para reducir la congestión del conjunto, en lugar de mandar a todos por el mismo corredor rápido. Avisa qué viajes llegarán tarde y cuáles no tienen ruta segura, y compara el resultado contra una referencia sin estrategia.
 
-> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. De los datos de la empresa solo se versionan en `gestion/` los archivos necesarios para ejecutar el prototipo; el resto del kit está en `.gitignore` (ver [Datos de la empresa](#datos-de-la-empresa)).
+> **Contexto:** prototipo del reto de ias software en el Hackathon FQSD (Disruptia y Universidad Icesi). La red es ficticia: 16 nodos, 28 tramos dirigidos y un único día simulado (2026-01-15, de 15:00 a 21:00). No hay mapas reales, API keys ni datos personales. Los datos de la empresa no se versionan: la carpeta `gestion/` está en `.gitignore` (ver [Datos de la empresa](#datos-de-la-empresa)).
 
 ---
 
@@ -24,7 +24,7 @@ Prototipo que debe funcionar en la demo. Incluye:
 
 | Módulo | Descripción | Estado |
 |--------|-------------|--------|
-| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 60 tests pasan |
+| Modelo | Carga de datos, grafo, tiempo de paso, seguridad y simulación de recorridos | Hecho, 79 tests de Python y 59 de la web pasan |
 | Consulta | Ruta, hora de salida y llegada para un origen, destino y hora límite | Hecho |
 | Lote | Procesa un escenario completo y mide la ocupación por tramo e intervalo | Hecho |
 | Estrategia | Reparte rutas y salidas para bajar la sobrecarga total (greedy por costo marginal y mejora local) | Hecho |
@@ -86,7 +86,7 @@ Fijas para todos los equipos (detalle en `gestion/documentacion/02_REGLAS_SIMULA
 
 ```text
 BiciRutas_IAsB/
-    ├── gestion/                # Datos y evaluador del kit; solo se versionan los archivos necesarios
+    ├── gestion/                # Paquete de la empresa; no se versiona (ver Datos de la empresa)
     ├── codigo/bicirutas/
     │   ├── datos.py            # Carga de JSON y construcción del grafo
     │   ├── modelo.py           # Duración por tramo, seguridad y simulación de recorrido
@@ -121,10 +121,8 @@ Requiere **Python 3.10+** (se usa 3.12) y **uv**.
 
 ### Datos de la empresa
 
-De la carpeta `gestion/` (paquete de la empresa) solo se versionan los 25 archivos que necesitan la API, los tests y el evaluador: `datos/{nodos,tramos,configuracion}.json`, `escenarios/indice.json`, `condiciones.json`, `restricciones.json` y `viajes.json` de cada escenario, y `herramientas/{evaluar,modelo,referencia}.py`. El resto del kit (PDF, documentación, ejemplos, plantillas, CSV, SVG y `validar_datos.py`) queda en `.gitignore`; consúltalo en el paquete original. Si el paquete está en otro lugar, define `BICIRUTAS_PAQUETE` con su ruta.
-
-> **Aviso para el equipo:** durante un tiempo `gestion/` no se versionó. Al hacer `pull` de este cambio, git puede borrar de tu copia local los archivos que dejaron de versionarse. Respáldala antes o vuelve a copiarla desde el kit.
-
+La carpeta `gestion/` (paquete de la empresa, con `datos/`, `escenarios/` y `herramientas/`) no se versiona, por la regla del kit de mantener los datos fuera del repositorio. Antes de ejecutar nada, copia el paquete original a `gestion/` en la raíz del repositorio, o define `BICIRUTAS_PAQUETE` con la ruta donde esté.
+> **Aviso para el equipo:** al hacer `pull` de este cambio, git borra de tu copia local los archivos de `gestion/` que dejaron de versionarse. Respáldala antes de actualizar o vuelve a copiarla desde el kit.
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
@@ -174,7 +172,7 @@ Los enlaces con ancla abren una vista y un escenario concretos, por ejemplo `htt
 
 ### Ejecutar con Docker
 
-Con Docker Engine y el complemento Docker Compose instalados, inicia la aplicación completa desde la raíz del repositorio:
+Con Docker Engine y el complemento Docker Compose instalados, y `gestion/` copiada del kit en la raíz, inicia la aplicación completa desde la raíz del repositorio:
 
 ```bash
 docker compose up --build
@@ -184,11 +182,11 @@ Abre `http://localhost:8080`. Compose levanta la API Python y el frontend React;
 
 ### Despliegue en Vercel
 
-El despliegue en línea usa Vercel sin servidor (configuración en `vercel.json`): la web se compila a `web/dist` y la API FastAPI corre como función desde `api/index.py`, que expone la app de `api/main.py` y las solicitudes `/api/*` se redirigen a ella. `api/index.py` busca los datos en `gestion/`, y los archivos necesarios están versionados (ver [Datos de la empresa](#datos-de-la-empresa)).
+El despliegue en línea usa Vercel sin servidor (configuración en `vercel.json`): la web se compila a `web/dist` y la API FastAPI corre como función desde `api/index.py`, que expone la app de `api/main.py` y las solicitudes `/api/*` se redirigen a ella. `api/index.py` busca los datos en `gestion/`, que no se versiona (ver [Datos de la empresa](#datos-de-la-empresa)): sin esa carpeta, la API desplegada no tiene datos que servir.
 
 ### Variables de entorno
 
-Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
+Copia `.env.example` a `.env` (no se versiona). `BICIRUTAS_PAQUETE` es la carpeta con `datos/` y `escenarios/`; por defecto `gestion`, que debes copiar del kit. El prototipo no usa llaves de servicios externos; si se agregan, van solo en `.env`.
 
 ---
 
@@ -249,7 +247,7 @@ Lo que ias software describió para su proyecto Bike y en qué estado queda en e
   - Escribir el motor en Python (grafo, tiempos, seguridad, congestión y estrategia de reparto), la API y la aplicación web.
   - Escribir los tests y el script que genera los resultados.
 - **Cómo se comprobó lo generado:**
-  - 60 tests automáticos, incluido el contraste de cada tramo y cada minuto contra el modelo oficial del paquete en los seis escenarios.
+  - 79 tests de Python y 59 de la web, incluido el contraste de cada tramo y cada minuto contra el modelo oficial del paquete en los seis escenarios.
   - Los seis resultados pasan `evaluar.py` con código de salida 0.
   - Las cifras de la referencia coinciden con `ejemplos/resumen_referencia.json`.
 - **Quién explica cada parte:**
