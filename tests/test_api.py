@@ -88,3 +88,47 @@ def test_estado_tramos_respeta_el_cierre_y_el_borde():
     assert estado("17:30")["T03"]["seguro"] is True
     assert estado("17:00")["T28"]["seguro"] is False
     assert cliente.get("/api/escenarios/03_cierre_temporal/estado-tramos", params={"hora": "21:00"}).status_code == 422
+
+
+def test_consulta_con_criterio_equilibrado_retorna_opciones():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "18:00",
+            "criterio": "equilibrado",
+        },
+    ).json()
+    assert r["criterio"] == "equilibrado"
+    assert isinstance(r["congestion"], int)
+    assert len(r["opciones"]) >= 1
+    etiquetas = [o["etiqueta"] for o in r["opciones"]]
+    assert etiquetas == ["recomendada", "mas_rapida", "menos_congestion"]
+    for o in r["opciones"]:
+        assert isinstance(o["congestion"], int)
+        assert o["recorrido"]["estado"] == "A_TIEMPO"
+
+
+def test_consulta_sin_criterio_retorna_solo_tres_llaves():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "17:35",
+        },
+    ).json()
+    assert set(r.keys()) == {"estado", "alternativas", "recorrido"}
+    assert r["estado"] == "A_TIEMPO"
+    assert r["recorrido"]["pasos"][0]["tramo_id"] == "T01"
+
+
+def test_consulta_con_criterio_invalido_da_422():
+    r = cliente.post(
+        "/api/escenarios/01_viaje_normal/consulta",
+        json={
+            "origen": "N01", "destino": "N05",
+            "salida_desde": "17:00", "llegada_limite": "18:00",
+            "criterio": "inventado",
+        },
+    )
+    assert r.status_code == 422

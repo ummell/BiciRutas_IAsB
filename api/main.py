@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,6 +45,17 @@ def _recorrido(r) -> dict | None:
     )
 
 
+@lru_cache(maxsize=32)
+def _reparto(escenario_id: str, peso: int):
+    esc = _escenario(escenario_id)
+    return repartir(esc, peso_congestion=peso)
+
+
+@lru_cache(maxsize=16)
+def _ocupacion(escenario_id: str):
+    return construir_ocupacion(_escenario(escenario_id), _reparto(escenario_id, PESO_CONGESTION))
+
+
 def _asignaciones(asignaciones: list) -> list:
     return [
         dict(viaje_id=a.viaje_id, estado=a.estado, recorrido=_recorrido(a.recorrido)) for a in asignaciones
@@ -84,6 +96,7 @@ class ConsultaIn(BaseModel):
     salida_desde: str = Field(pattern=HORA)
     llegada_limite: str = Field(pattern=HORA)
     salida_hasta: str | None = Field(default=None, pattern=HORA)
+    criterio: Literal["rapido", "equilibrado"] = "rapido"
 
 
 @app.post("/api/escenarios/{escenario_id}/consulta")
@@ -104,6 +117,17 @@ def consulta(escenario_id: str, datos: ConsultaIn):
     )
     if a_minutos(viaje["salida_hasta"]) < a_minutos(viaje["salida_desde"]):
         raise HTTPException(422, "salida_hasta no puede ser anterior a salida_desde")
+    if datos.criterio == "equilibrado":
+        ocupacion = _ocupacion(escenario_id)
+        c = consultar(esc, viaje, ocupacion)
+        return dict(
+            estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido),
+            criterio=datos.criterio, congestion=c.congestion,
+            opciones=[
+                dict(etiqueta=o.etiqueta, congestion=o.congestion, recorrido=_recorrido(o.recorrido))
+                for o in c.opciones
+            ],
+        )
     c = consultar(esc, viaje)
     return dict(estado=c.estado, alternativas=c.alternativas, recorrido=_recorrido(c.recorrido))
 
@@ -111,7 +135,7 @@ def consulta(escenario_id: str, datos: ConsultaIn):
 @lru_cache(maxsize=32)
 def _lote(escenario_id: str, peso: int):
     esc = _escenario(escenario_id)
-    propio, base = repartir(esc, peso_congestion=peso), referencia_lote(esc)
+    propio, base = _reparto(escenario_id, peso), referencia_lote(esc)
     return dict(
         escenario_id=esc.id,
         peso_congestion=peso,
